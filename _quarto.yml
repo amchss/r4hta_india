@@ -1,0 +1,21 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "R4HTA-India 2025"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: day_one.qmd
+        text: Day One 
+      - href: day_two.qmd
+        text: Day Two
+
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+    css: styles.css
+    toc: true
