@@ -1,5 +1,0 @@
----
-title: "R4HTA-India 2025"
-format: html
-editor: source
----
