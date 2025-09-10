@@ -10,9 +10,9 @@ embed-resources: true
 - [Probability Distributions](prob_dist_20250908_v1.qmd)
 
 
-- [Markov Modeling: A Detailed Guide](prob_dist_20250908_v1.qmd)
+- [Markov Modeling: A Detailed Guide](markov_step_by_step_Base.qmd)
 
-- [Homogeneous Markov Model in heemod: PCI vs CABG](prob_dist_20250908_v1.qmd)
+- [Homogeneous Markov Model in heemod: PCI vs CABG](PCI_vs_CABG_heemod.qmd)
 
 
 
