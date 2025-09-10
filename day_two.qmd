@@ -5,9 +5,9 @@ embed-resources: true
 ## Overview: Day Two
 
 
-<!-- ## Topics Covered Today -->
+## Topics Covered Today
 
-<!-- - [Data Visualization using R](data_visual.qmd) -->
+- [Probability Distributions](prob_dist_20250908_v1.qmd)
 
 <!-- - [Introduction to Spatial Epidemiology](intro_spatial.qmd) -->
 
