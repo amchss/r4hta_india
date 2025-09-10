@@ -4,14 +4,14 @@ embed-resources: true
 
 ## Overview: Day One
 
-<!-- -   [Introduction: Basic Concepts](intro.qmd) -->
+-   [Introduction: Basic Concepts](intro.qmd)
 
-<!-- -   [Getting comfortable with R and RStudio](intro_r.qmd) -->
+-   [Getting comfortable with R and RStudio](install_r_rstudio.qmd)
 
-<!-- -   [Fundamentals of Working with Data](fundamentals_dplyr.qmd) -->
-
-<!-- -   [Exploring Data with R](exploring_data.qmd) -->
-
-<!-- - [Communicating Research with Quarto](quarto.qmd) -->
+- [Data Wrangling](exploring_data_v2.qmd)
 
 - [Data Visualisation](data_visual.qmd)
+
+- [Communicating Research with Quarto](quarto.qmd)
+
+
