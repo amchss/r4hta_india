@@ -9,15 +9,12 @@ embed-resources: true
 
 - [Probability Distributions](prob_dist_20250908_v1.qmd)
 
-<!-- - [Introduction to Spatial Epidemiology](intro_spatial.qmd) -->
 
-<!-- - [Spatial Data Manipulation](spatial_data_mani.qmd) -->
+- [Markov Modeling: A Detailed Guide](prob_dist_20250908_v1.qmd)
 
-<!-- - [Spatial Data Visualisation](spatial_data_visual.qmd) -->
+- [Homogeneous Markov Model in heemod: PCI vs CABG](prob_dist_20250908_v1.qmd)
 
-<!-- - [Publication Ready Tables](gtsummary.qmd) -->
 
-<!-- - [Communicating Research with Quarto](quarto.qmd) -->
 
 
 

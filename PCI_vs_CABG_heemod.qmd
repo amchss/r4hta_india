@@ -1,0 +1,254 @@
+---
+title: "Step by step Time Homogeneous Markov Model in heemod: PCI vs CABG"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Model description
+
+We compare **Percutaneous Coronary Intervention (PCI)** vs **Coronary Artery Bypass Grafting (CABG)** over 10 annual cycles in a **time-homogeneous** cohort Markov model.  
+
+## Transition probabilities - how patients move between states
+
+**Idea:** Each row of the transition matrix is “from state”; each column is “to state”. Rows must sum to **1**. Death’s row is `[0,0,0,1]`.
+
+**Function you’ll see:** `define_transition()` builds a transition object that strategies will use.
+
+```{r}
+library(heemod)
+
+# State names
+nm <- c("Stable","MI","Reintervention","Death")
+
+# --- PCI transition matrix (rows = from, columns = to) ---
+mat_pci <- define_transition(
+  
+    0.70, 0.15, 0.10, 0.05,  # from Stable
+    0.50, 0.00, 0.20, 0.30,  # from MI
+    0.80, 0.00, 0.00, 0.20,  # from Reintervention
+    0.00, 0.00, 0.00, 1.00   # from Death (absorbing)
+  ,
+  state_names = nm
+)
+
+
+# --- CABG transition matrix ---
+mat_cabg <- define_transition(
+    0.80, 0.08, 0.07, 0.05,  # from Stable
+    0.60, 0.00, 0.10, 0.30,  # from MI
+    0.80, 0.00, 0.00, 0.20,  # from Reintervention
+    0.00, 0.00, 0.00, 1.00   # from Death
+  ,
+  state_names = nm
+)
+
+```
+**Common pitfalls:** Rows not summing to 1; mismatched state names between matrices and strategies; Death row not absorbing.
+
+## Plot model
+### PCI
+```{r}
+plot(mat_pci)
+```
+### CABG
+```{r}
+plot(mat_cabg)
+```
+
+## State values
+
+**Idea:** Each state accrues **cost** and **QALY** for the time spent there in a cycle.
+
+**Function you’ll see:** `define_state()` sets these values. Here we **discount inside states** using `discount(rate)`. All states must expose the **same** value names.
+
+```{r}
+# Economic parameters
+cost_discount_rate <- 0.03
+qaly_discount_rate <- 0.03
+
+cost_stable <-  50000
+cost_mi     <- 20000
+cost_reint  <- 150000
+cost_death  <- 0
+
+util_stable <- 0.85
+util_mi     <- 0.60
+util_reint  <- 0.70
+util_death  <- 0.00
+
+# Define states (cost_total = state cost + strategy-specific upfront (only in cycle 1))
+# Define states: discount inside states (no cycle logic)
+state_Stable <- define_state(
+  cost_total = discount(cost_stable, cost_discount_rate),
+  qaly       = discount(util_stable, qaly_discount_rate)
+)
+
+state_MI <- define_state(
+  cost_total = discount(cost_mi, cost_discount_rate),
+  qaly       = discount(util_mi, qaly_discount_rate)
+)
+
+state_Reintervention <- define_state(
+  cost_total = discount(cost_reint, cost_discount_rate),
+  qaly       = discount(util_reint, qaly_discount_rate)
+)
+
+state_Death <- define_state(
+  cost_total = 0,
+  qaly       = discount(util_death, qaly_discount_rate)
+)
+```
+**Common pitfalls:** Inconsistent value names across states; double discounting (don’t also pass `discount=` to `run_model()` if you discount here).
+
+
+One-time upfront costs — cleanly at baseline
+
+**Idea:** Charge the procedure once at the start (cycle 0), not every cycle.
+
+**Function you’ll see:** `define_starting_values()` inside `define_strategy()` adds **one-time** values at baseline. The names must match what we pass to `run_model(cost=..., effect=...)`.
+
+```{r}
+# One-time costs at baseline
+upfront_pci  <- 200000
+upfront_cabg <- 300000
+```
+
+## Strategy definitions — assemble transitions, states, and upfronts
+
+**Function you’ll see:** `define_strategy(transition=..., <state>=..., starting_values=...)`
+
+```{r}
+strat_pci <- define_strategy(
+  transition = mat_pci,
+  Stable = state_Stable,
+  MI = state_MI,
+  Reintervention = state_Reintervention,
+  Death = state_Death,
+  starting_values = define_starting_values(
+    cost_total = upfront_pci,  # one-time baseline cost
+    qaly       = 0             # no baseline QALY
+  )
+)
+
+strat_cabg <- define_strategy(
+  transition = mat_cabg,
+  Stable = state_Stable,
+  MI = state_MI,
+  Reintervention = state_Reintervention,
+  Death = state_Death,
+  starting_values = define_starting_values(
+    cost_total = upfront_cabg,  # one-time baseline cost
+    qaly       = 0             # no baseline QALY
+  )
+)
+```
+**Common pitfalls:** Strategy states must match transition state names and order; all states must expose the same value names.
+
+## Running the model— simulate the cohort
+
+**Function you’ll see:** `run_model()` executes the Markov model across cycles.
+
+- We choose `method = "end"` (values counted at cycle end).
+- Because we discounted inside states, we **do not** pass `discount=` here.
+
+```{r}
+res <- run_model(
+  pci  = strat_pci,
+  cabg = strat_cabg,
+  cycles = 10,
+  init = c(Stable = 1000, MI = 0, Reintervention = 0, Death = 0),
+  method = "beginning",
+  cost = cost_total,
+  effect = qaly
+)
+```
+
+**Alternative pattern:** Put raw values in states and pass `discount = c(cost=0.05, effect=0.05)` here (but then don’t use `discount()` in states).
+
+## Read results — totals, ICER, and NMB
+
+**Functions you’ll see:** `summary()`  (version‑dependent). The totals already include the **one‑time starting values** we set earlier.
+
+```{r}
+wtp <- c(150000, 300000)
+summary(res, threshold = wtp)
+```
+
+**Formulas to remember:**  
+- `ICER = (Cost_CABG − Cost_PCI) / (QALY_CABG − QALY_PCI)`  
+- `NMB = QALY * WTP − Cost`
+
+
+
+## Visualise — see how the cohort and values evolve
+
+**Function you’ll see:** `plot(res, ...)` with built‑in panels.
+
+### Patient Counts by Strategy
+
+
+
+```{r}
+library(ggplot2)
+plot(res, type = "counts")+theme_minimal()
+```
+
+### Patient Counts by State
+```{r}
+plot(res, type = "counts", panel ="by_state", free_y = TRUE)+
+  theme_minimal()
+```
+
+### Costs by Strategy
+```{r}
+plot(res, type = "values", panel = "by_value",
+     free_y = TRUE) +
+  scale_color_brewer(
+    name = "Strategy",
+    palette = "Set1"
+  )+
+  theme_minimal()
+```
+
+## Trace tables
+### Population over cycles
+```{r}
+population_over_cycles <- get_counts(res)
+
+t_population <- population_over_cycles |> 
+  tidyr::pivot_wider(names_from = .strategy_names, values_from = count) |>
+  dplyr::arrange(model_time)
+
+library(DT)
+DT::datatable(t_population,
+              extensions = 'Buttons',
+              options = list(
+                dom = 'Bfrtip',
+                buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                pageLength = 5
+              ))
+  
+```
+
+### Costs and QALYs over cycles
+```{r}
+costs_qalys_over_cycles <- get_values(res)
+t_costs_qalys <- costs_qalys_over_cycles |> 
+  tidyr::pivot_wider(names_from = .strategy_names, values_from = value) |>
+  dplyr::arrange(model_time, value_names)
+DT::datatable(t_costs_qalys,
+              extensions = 'Buttons',
+              options = list(
+                dom = 'Bfrtip',
+                buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                pageLength = 5
+              ))
+```

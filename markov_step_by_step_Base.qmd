@@ -1,0 +1,577 @@
+---
+title: "Markov Modeling: A Detailed Guide"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    self-contained: true
+    code-fold: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction to Markov Modeling
+
+A **Markov model** is a powerful tool for analyzing a patient's journey over an extended period. Unlike a decision tree, which is a snapshot in time, a Markov model simulates how a group of patients moves through different health states over many years. It is perfect for analyzing chronic diseases like heart disease, where a patient's condition can change over time. In this exercise, we will build a Markov model to compare two treatment strategies for coronary artery disease: **Percutaneous Coronary Intervention (PCI)** and **Coronary Artery Bypass Grafting (CABG)**. We will simulate a cohort of patients over a 10-year period, tracking their health states, costs, and quality-adjusted life years (QALYs). ---
+
+### Key Concepts
+
+-   **Health States**: These are the possible clinical conditions a patient can be in. We will use a simplified set of states for our model:
+    -   `Stable`: The patient is healthy and has stable symptoms.
+    -   `Myocardial Infarction (MI)`: The patient has a heart attack.
+    -   `Reintervention`: The patient requires a repeat procedure.
+    -   `Death`: The patient has died (this is an **absorbing state**, meaning once a patient enters this state, they cannot leave).
+-   **Cycles**: The model runs in discrete time periods, or cycles. Our cycles will be one year long.
+-   **Transition Probabilities**: These are the probabilities that a patient will move from one health state to another in a single cycle. These values come from a literature review of clinical trials.
+-   **Costs and Utilities**: Each health state has associated costs (e.g., medical expenses) and utilities (e.g., quality of life). We will use these to calculate the total cost and QALYs for each treatment strategy.
+
+------------------------------------------------------------------------
+
+### Visualizing the Markov Model
+
+This diagram shows how a patient can move between the different health states in our model. The arrows represent the possible transitions in a single cycle.
+
+```{r}
+#| label: visualize-model
+#| echo: true
+#| eval: true
+
+# Check and install DiagrammeR if not already installed
+if (!requireNamespace("DiagrammeR", quietly = TRUE)) {
+  install.packages("DiagrammeR")
+}
+library(DiagrammeR)
+
+# Create the visual representation of the Markov model
+grViz("
+  digraph G {
+    graph [overlap = true, splines = true, fontname = Helvetica, layout = dot]
+
+    // Define nodes with shapes and labels
+    node [shape = rectangle, style = filled, color = LightBlue, fontname = Helvetica]
+    Stable;
+    MI [color = LightCoral];
+    Reintervention [color = LightYellow];
+    Death [shape = hexagon, color = Gray];
+
+    // Define transitions (edges)
+    Stable -> Stable [label = 'P(stable to stable)'];
+    Stable -> MI [label = 'P(stable to MI)'];
+    Stable -> Reintervention [label = 'P(stable to reintervention)'];
+    Stable -> Death [label = 'P(stable to death)'];
+
+    MI -> Stable [label = 'P(MI to stable)'];
+    MI -> Reintervention [label = 'P(MI to reintervention)'];
+    MI -> Death [label = 'P(MI to death)'];
+
+    Reintervention -> Stable [label = 'P(reintervention to stable)'];
+    Reintervention -> Death [label = 'P(reintervention to death)'];
+
+    // Death is an absorbing state
+    Death -> Death [label = 'P(death to death) = 1', color = Gray];
+  }
+")
+```
+
+------------------------------------------------------------------------
+
+## Building a Markov Model Step-by-Step
+
+**Objective:** To build a working Markov model in R to compare the long-term cost and health outcomes of PCI versus CABG.
+
+### Step 1: Define Model Parameters
+
+In this first step, we'll define all the parameters for our model. These are the costs, utilities, and transition probabilities we've gathered from our hypothetical literature review.
+
+#### 1.1 Define States
+
+```{r}
+state_names <- c("Stable", "MI", "Reintervention", "Death")
+```
+
+#### 1.2 Define Costs
+
+```{r}
+#| label: define-costs
+#| echo: true
+#| eval: true
+
+# Costs in Indian Rupees (INR)
+cost_pci_initial <- 200000 # Cost of the initial PCI procedure for the cohort
+cost_cabg_initial <- 300000 # Cost of the initial CABG procedure for the cohort
+cost_stable <- 50000 # Annual cost for a stable patient
+cost_mi <- 20000 # Cost of a myocardial infarction event
+cost_reintervention <- 150000 # Cost of a reintervention
+cost_death <- 0 # Cost for the absorbing state
+```
+
+#### 1.2.1 Show costs
+
+```{r}
+costs_table <- tibble::tibble(
+  State = state_names,
+  Cost = c(cost_stable, cost_mi, cost_reintervention, cost_death)
+)
+# Check and install gt if not already installed for table formatting
+if (!requireNamespace("gt", quietly = TRUE)) {
+  install.packages("gt")
+}
+library(gt)
+gt(costs_table)
+```
+
+#### 1.3 Utilities
+
+```{r}
+#| label: define-utilities
+#| echo: true
+#| eval: true
+
+# Utilities (Quality-Adjusted Life Years - QALYs)
+utility_stable <- 0.85 # Utility value for a stable patient
+utility_mi <- 0.6 # Utility value during the year of an MI
+utility_reintervention <- 0.7 # Utility value during the year of a reintervention
+utility_death <- 0 # Utility value for the absorbing state
+```
+
+#### 1.3.1 Show utilities
+
+```{r}
+utilities_table <- tibble::tibble(
+  State = c("Stable", "Myocardial Infarction", "Reintervention", "Death"),
+  Utility = c(utility_stable, utility_mi, utility_reintervention, utility_death)
+)
+gt(utilities_table)
+```
+
+#### 1.4 Discounting
+
+```{r}
+#| label: define-discounting
+#| echo: true
+#| eval: true
+
+# Discounting
+discount_rate_cost <- 0.03 # A common discount rate for costs (5%)
+discount_rate_qaly <- 0.03 # A common discount rate for QALYs (5%)
+```
+
+#### 1.5 Define Transition Probabilities for PCI and CABG
+
+##### 1.5.1 PCI Transition Probabilities
+
+```{r}
+#| label: define-probabilities-pci
+#| echo: true
+#| eval: true
+
+# Transition probabilities from literature for a 1-year cycle
+pci_trans <- list(
+  stable_to_stable = 0.70,
+  stable_to_mi = 0.15,
+  stable_to_reintervention = 0.10,
+  stable_to_death = 0.05,
+  mi_to_reintervention = 0.20,
+  mi_to_stable = 0.50,
+  mi_to_death = 0.30,
+  reintervention_to_stable = 0.80,
+  reintervention_to_death = 0.20
+)
+```
+
+##### 1.5.2 CABG Transition Probabilities
+
+```{r}
+#| label: define-probabilities-cabg
+#| echo: true
+cabg_trans <- list(
+  stable_to_stable = 0.80,
+  stable_to_mi = 0.08,
+  stable_to_reintervention = 0.07,
+  stable_to_death = 0.05,
+  mi_to_reintervention = 0.10,
+  mi_to_stable = 0.60,
+  mi_to_death = 0.30,
+  reintervention_to_stable = 0.80,
+  reintervention_to_death = 0.20
+)
+```
+
+### Step 2: Build the Transition Matrix
+
+The **transition matrix** is the engine of our Markov model. It's a square matrix where each row represents the starting health state and each column represents the destination health state. The value at each intersection is the probability of that transition occurring.
+
+**Instructions:** Create two matrices, one for PCI and one for CABG, using the probabilities we defined in the previous step.
+
+#### 2.1 Matrix Construction for PCI
+
+```{r}
+#| label: build-matrices-pci
+#| echo: true
+#| eval: true
+
+# PCI Transition Matrix
+trans_pci <- matrix(
+  c(
+    pci_trans$stable_to_stable, pci_trans$stable_to_mi, pci_trans$stable_to_reintervention, pci_trans$stable_to_death, # From Stable...
+    pci_trans$mi_to_stable, 0, pci_trans$mi_to_reintervention, pci_trans$mi_to_death, # From MI...
+    pci_trans$reintervention_to_stable, 0, 0, pci_trans$reintervention_to_death, # From Reintervention...
+    0, 0, 0, 1 # From Death (absorbing state)
+  ),
+  nrow = 4,
+  byrow = TRUE,
+  dimnames = list(state_names, state_names)
+)
+# Print the matrices to see their structure
+print("PCI Transition Matrix:")
+print(trans_pci)
+```
+
+#### 2.1.1 Validation of Transition Matrices
+
+```{r}
+rowSums(trans_pci)
+trans_pci["Death", ]
+```
+
+> **Beginner tip:** Rows are ‘from’, columns are ‘to’. Each row must sum to 1. ‘Death’ is an absorbing row [0,0,0,1].
+
+#### 2.2 Matrix Construction for CABG
+
+```{r}
+# CABG Transition Matrix
+trans_cabg <- matrix(
+  c(
+    cabg_trans$stable_to_stable, cabg_trans$stable_to_mi, cabg_trans$stable_to_reintervention, cabg_trans$stable_to_death, # From Stable...
+    cabg_trans$mi_to_stable, 0, cabg_trans$mi_to_reintervention, cabg_trans$mi_to_death, # From MI...
+    cabg_trans$reintervention_to_stable, 0, 0, cabg_trans$reintervention_to_death, # From Reintervention...
+    0, 0, 0, 1 # From Death (absorbing state)
+  ),
+  nrow = 4,
+  byrow = TRUE,
+  dimnames = list(c("Stable", "MI", "Reintervention", "Death"), c("Stable", "MI", "Reintervention", "Death"))
+)
+
+# Print the matrices to see their structure
+print("CABG Transition Matrix:")
+print(trans_cabg)
+```
+
+#### 2.2.1 Validation of Transition Matrices
+
+```{r}
+rowSums(trans_cabg)
+trans_cabg["Death", ]
+```
+
+> **Beginner tip:** Rows are ‘from’, columns are ‘to’. Each row must sum to 1. ‘Death’ is an absorbing row [0,0,0,1].
+
+### Step 3: Run the Markov Model and Obtain Results
+
+This is the core of our analysis. We will simulate a cohort of 1,000 patients over a 10-year period. We use a **`for` loop** to run the simulation for each year.
+
+The key calculation in this step is **matrix multiplication**, denoted by `%*%` in R. In each cycle, we multiply the number of patients in each health state by the transition matrix to determine how many patients move to each new state.
+
+#### 3.1 Simulate Patient Distribution
+
+##### 3.1.1 Set up the simulation
+
+We are starting with a cohort of 1,000 patients in the 'Stable' state.
+
+```{r}
+initial_pop <- c(Stable = 1000, MI = 0, Reintervention = 0, Death = 0)
+num_years <- 10 # 10 years + initial state
+```
+
+##### 3.1.2 Storage for results
+
+```{r}
+# Storage matrices for distribution over time
+pci_dist <- matrix(NA_real_, nrow = num_years, ncol = length(state_names),
+                   dimnames = list(Year = 1:num_years, State = state_names))
+cabg_dist <- pci_dist
+
+# Initial distribution
+pci_dist[1, ] <- initial_pop
+cabg_dist[1, ] <- initial_pop
+```
+
+PCI Storage Matrix
+
+```{r}
+pci_dist
+```
+
+CABG Storage Matrix
+
+```{r}
+cabg_dist
+```
+
+##### 3.1.3 Loop through years - Run the simulation and calculate state distributions
+
+```{r}
+# Loop through years
+for (t in 2:num_years) {
+  pci_dist[t, ]  <- pci_dist[t-1, ]  %*% trans_pci
+  cabg_dist[t, ] <- cabg_dist[t-1, ] %*% trans_cabg
+}
+```
+
+##### What is a Loop?
+
+In R, a **`for` loop** is used to repeat a block of code multiple times.\
+Here, the loop runs once for each year of the simulation, starting from the second year (`t = 2`) until the final year (`t = num_years`).\
+We start at 2 because the first year (`t = 1`) already contains the initial patient distribution.
+
+##### Step-by-Step Explanation
+
+1.  **`for (t in 2:num_years)`**
+
+    -   This sets up the loop.
+
+    -   On the first run, `t = 2`. On the next run, `t = 3`, and so on, until `t = num_years`.
+
+2.  **`pci_dist[t-1, ]`**
+
+    -   This extracts the patient distribution from the previous year (`t-1`) for PCI.
+
+    -   It is a vector showing how many patients were in each health state (Stable, MI, Reintervention, Death).
+
+3.  **`%*% trans_pci`**
+
+    -   `%*%` means matrix multiplication in R.
+
+    -   Multiplying the previous year’s patient distribution by the PCI transition matrix redistributes patients into new states for the current year.
+
+4.  **`pci_dist[t, ] <- ...`**
+
+    -   The result of the multiplication (the new patient distribution) is stored in row `t` of the PCI distribution matrix.
+
+5.  **`cabg_dist[t, ] <- cabg_dist[t-1, ] %*% trans_cabg`**
+
+    -   The same operation is done for CABG, using its own transition matrix.
+
+##### Intuition
+
+Each iteration of the loop moves the entire patient cohort forward by **one cycle** (one year).
+
+-   Patients from each state “flow” into other states according to the transition probabilities.
+
+-   Over the course of the loop, row by row, we build up the full history of how patients evolve under PCI and CABG.
+
+**Formula to remember:**
+
+> Current year’s distribution = Previous year’s distribution × Transition matrix
+
+##### Show year wise patient distribution (Trace)
+
+##### PCI
+
+```{r}
+pci_dist
+```
+
+##### CABG
+
+```{r}
+cabg_dist
+```
+
+#### 3.2 Calculate Costs and QALYs
+
+##### 3.2.1 Define cost and utility vectors for easy access
+
+```{r}
+# State rewards as vectors
+cost_vec <- c(cost_stable, cost_mi, cost_reintervention, cost_death)
+util_vec <- c(utility_stable, utility_mi, utility_reintervention, utility_death)
+```
+
+-   Vectors aligned to state order (e.g., `c("Stable","MI","Reintervention","Death")`).
+
+-   In each cycle:
+
+    -   **Annual cost** = sum over states of (patients in state × cost of that state).
+
+    -   **Annual QALY** = sum over states of (patients in state × utility of that state).
+
+##### 3.2.2 Pre-allocate storage for annual results
+
+```{r}
+# Empty numeric vectors to fill
+pci_costs  <- numeric(num_years)
+pci_qalys  <- numeric(num_years)
+cabg_costs <- numeric(num_years)
+cabg_qalys <- numeric(num_years)
+```
+
+-   Creates numeric vectors of length `num_years` to store **discounted** cost and QALY per year for each strategy.
+
+-   Pre-allocation is faster and avoids growing objects inside the loop.
+
+##### 3.2.3 Loop through years - Calculate costs and QALYs for each cycle
+
+```{r}
+for (t in 1:num_years) {
+  # undiscounted annual totals
+  pci_costs[t]  <- sum(pci_dist[t, ]  * cost_vec)
+  pci_qalys[t]  <- sum(pci_dist[t, ]  * util_vec)
+  cabg_costs[t] <- sum(cabg_dist[t, ] * cost_vec)
+  cabg_qalys[t] <- sum(cabg_dist[t, ] * util_vec)
+
+  # discount to present
+  pci_costs[t]  <- pci_costs[t]  * (1 / (1 + discount_rate_cost)^(t - 1))
+  pci_qalys[t]  <- pci_qalys[t]  * (1 / (1 + discount_rate_qaly)^(t - 1))
+  cabg_costs[t] <- cabg_costs[t] * (1 / (1 + discount_rate_cost)^(t - 1))
+  cabg_qalys[t] <- cabg_qalys[t] * (1 / (1 + discount_rate_qaly)^(t - 1))
+}
+```
+
+-   **Undiscounted totals:** multiply the cohort counts in each state (`pci_dist[t, ]` / `cabg_dist[t, ]`) by the state’s cost or utility, then sum.
+
+-   **Discounting:** converts future values to present value.
+
+    -   Formula: PV=value at t(1+r)t−1PV=(1+r)t−1value at t​ with rate rr (costs and QALYs may use the same or different rr).
+
+    -   We use `t-1` so that year 1 is **not** discounted (present).
+
+#### 3.3 Display Yearwise Costs and QALYs
+
+##### 3.3.1 PCI
+
+```{r}
+# Create a data frame for PCI results
+pci_results <- tibble::tibble(
+  year = 1:num_years,
+  cost = pci_costs,
+  qaly = pci_qalys
+) |> 
+    gt() %>%
+  tab_header(title = "PCI Annual Discounted Costs and QALYs")
+pci_results
+```
+
+##### 3.3.2 CABG
+
+```{r}
+# Create a data frame for CABG results
+cabg_results <- data.frame(
+  year = 1:num_years,
+  cost = cabg_costs,
+  qaly = cabg_qalys
+) |> 
+    gt() %>%
+  tab_header(title = "CABG Annual Discounted Costs and QALYs")
+cabg_results
+```
+
+#### 3.4 Add one-time initial costs and sum lifetime QALYs
+
+```{r}
+#| label: lifetime-results
+#| echo: true
+total_cost_pci  <- sum(pci_costs)  + (cost_pci_initial*1000)
+total_qaly_pci  <- sum(pci_qalys)
+total_cost_cabg <- sum(cabg_costs) + (cost_cabg_initial*1000)
+total_qaly_cabg <- sum(cabg_qalys)
+
+```
+
+-   Add the one-time initial procedure cost to the total discounted costs.
+-   Sum the discounted QALYs over the entire time horizon.
+
+#### 3.5 Display Final Results
+
+#### Final Summary of Results
+
+```{r}
+#| label: final-summary
+#| echo: true
+#| eval: true
+
+# Create a final summary table
+summary_df <- data.frame(
+  Procedure = c("PCI", "CABG"),
+  Total_Lifetime_Cost = c(total_cost_pci, total_cost_cabg),
+  Total_Lifetime_QALY = c(total_qaly_pci, total_qaly_cabg)
+)
+
+summary_df %>%
+  gt() %>%
+  tab_header(title = "Total Lifetime Costs and QALYs") %>%
+  fmt_currency(
+    columns = Total_Lifetime_Cost,
+    currency = "INR",
+    decimals = 0
+  ) %>%
+  fmt_number(
+    columns = Total_Lifetime_QALY,
+    decimals = 3
+  )
+```
+
+### Step 4: Final Economic Evaluation Metrics
+
+This final step calculates the key metrics for our HTA: the ICER and the NMB. These metrics help us interpret the results of our model and make a decision about the cost-effectiveness of a new technology.
+
+#### ICER (Incremental Cost-Effectiveness Ratio)
+
+The ICER tells us the additional cost required to gain one additional unit of health (one QALY) from a new technology compared to the existing standard of care.
+
+#### **Formula**
+
+$$
+\text{ICER} = \frac{\Delta \text{Cost}}{\Delta \text{QALY}} = \frac{\text{Cost}_{\text{new}} - \text{Cost}_{\text{standard}}}{\text{QALY}_{\text{new}} - \text{QALY}_{\text{standard}}}
+$$
+
+```{r}
+delta_cost <- total_cost_cabg - total_cost_pci
+delta_qaly <- total_qaly_cabg - total_qaly_pci
+icer <- delta_cost / delta_qaly
+
+```
+
+#### NMB (Net Monetary Benefit)
+
+The NMB translates health benefits into monetary terms, allowing us to see the overall value of a treatment strategy.
+
+-   Translates QALYs to money at a **willingness-to-pay** (WTP) threshold.
+
+-   **NMB** =λ×QALY−Cost=λ×QALY−Cost.
+
+-   Prefer the strategy with **higher NMB** at the chosen λλ.
+
+```{r}
+wtp_threshold <- 150000
+nmb_pci  <- (total_qaly_pci  * wtp_threshold) - total_cost_pci
+nmb_cabg <- (total_qaly_cabg * wtp_threshold) - total_cost_cabg
+
+```
+
+#### Display ICER and NMB Results
+```{r}
+# Create a data frame for ICER and NMB results
+icer_nmb_df <- data.frame(
+  Metric = c("ICER (INR per QALY)", "NMB PCI (INR)", "NMB CABG (INR)"),
+  Value = c(icer, nmb_pci, nmb_cabg)
+)
+icer_nmb_df %>%
+  gt() %>%
+  tab_header(title = "ICER and NMB Results") %>%
+  fmt_currency(
+    columns = Value,
+    currency = "INR",
+    decimals = 2
+  )
+icer_nmb_df
+```
+
+
+
+### Conclusion
+
+In this detailed guide, we've built a Markov model from the ground up to compare PCI and CABG for coronary artery disease. We've defined health states, transition probabilities, costs, and utilities, and then simulated patient outcomes over a 10-year period. Finally, we calculated key economic evaluation metrics like the ICER and NMB to inform decision-making. This model provides a framework for understanding the long-term implications of different treatment strategies and can be adapted for other diseases and interventions. Remember, the accuracy of a Markov model depends heavily on the quality of the input data, so always ensure your parameters are based on robust clinical evidence. Happy modeling!
