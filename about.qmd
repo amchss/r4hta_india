@@ -1,0 +1,27 @@
+---
+title: "About Us"
+---
+
+## Health Technology Assessment in India (HTAIn)
+
+:::{style="text-align:justify"}
+
+To facilitate the process of transparent and evidence informed decision making in the field of health, Government of India has created an institutional arrangement called the Health Technology Assessment in India (HTAIn) under the Department of Health Research (DHR). HTAIn is entrusted with the responsibility to collate and where needed generate evidence related to the clinical effectiveness, cost-effectiveness, and safety of medicines, devices and health programs using the Health Technology Assessment (HTA) approach.
+
+Importance of Health Technology Assessment-The Government of India is committed to extend healthcare services to its 1.44 billion population and is constantly making endeavours to provide affordable and quality healthcare. The government strives to provide affordable healthcare to its citizens within the available resources with optimal resource allocation. Health Technology Assessment (HTA), is a widely used methodology globally, for evidence generation for decision making in healthcare sector and for optimization of resource utilization in health. HTA provides systematic evaluation of properties, effects and/or impacts of health technologies or interventions. The assessment is conducted by interdisciplinary groups using explicit analytical frameworks, drawing on clinical, epidemiological, health economic and other information and methodologies. It may be applied to evaluate health interventions andpublic health programmes, priority setting in health care, identifying cost effectiveness thresholds for medicines and other technologies based on their cost–effectiveness, and for guiding the development of clinical guidelines. “Health technology or Health intervention” refers to an application of organized knowledge and skills in the form of diagnostics, devices, drugs including their formulations and delivery systems, vaccines, procedures, novel therapeutics, health programmes and systems developed to address a health problem and improve quality of lives including digital technologies”. Department of Health Research, MoHFW initiated a pilot programme on Health technology Assessment (HTA) in April 2017 for evaluation of appropriateness and cost effectiveness of both existing and new health technologies in the country as part of “Research Governance” mandate of the Department. In June 2021, the HTA was approved as a sub scheme under the umbrella Scheme of Human Resource and Capacity Development. Office of the Health Technology Assessment in India (HTAIn) has been approved for establishment as an attached office with 4 divisions on 9 th May 2023. The Department of Expenditure has also approved the constitution of the attached office in Department of Health Research with creation of 15 scientific and administrative posts. There are eight Resource Hubs and over 20 resource centres under HTAIn. Regional resource Centre at Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST),Trivandrum is one among those.
+
+:::
+
+## Regional Resource Centre for Health Technology Assessment - AMCHSS, SCTIMST Trivandrum
+
+### An overview
+
+:::{style="text-align:justify"}
+
+The Regional Resource Centre for Health Technology Assessment (RRH-HTAIn) was established in Achutha Menon Centre for Health Science Studies (AMCHSS), Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Trivandrum on 27/02/2018 (Fig. 1). The mandate of the RRC-HTAIn at SCTIMST is to conduct research, capacitate, and generate quality evidence to support health policy decision-making in Kerala, to achieve Universal Health Coverage. Dr. Biju Soman (Professor, AMCHSS) is the Principal Investigator. Other staff members of the resource centre include Dr. Ashis John, Dr. Rehna C Mohamed, Mr. Abhilash Kurup and Ms. Chandini Babu.
+
+:::
+
+![Figure 1: Shri. Dr. Harsh Vardhan, Minister of Health and Family Welfare, inaugurating the HTA unit in presence of Shri. Kadakampally Surendran, Minister for Co-Operation, Tourism, and Devaswom.](images/ina_hta.jpg){fig-align="center"}
+
+

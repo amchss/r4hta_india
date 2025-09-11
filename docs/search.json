@@ -303,16 +303,16 @@
   {
     "objectID": "day_one.html",
     "href": "day_one.html",
-    "title": "R4HTA-India 2025",
+    "title": "R4HTA India 2025",
     "section": "",
-    "text": "Introduction: Basic Concepts\nGetting comfortable with R and RStudio\nData Wrangling\nData Visualisation\nCommunicating Research with Quarto"
+    "text": "Day 1 of the R4HTA India 2025 workshop introduced participants to the essentials of working with R for Health Technology Assessment. The sessions emphasized getting comfortable with R and RStudio, learning how to handle and clean data, creating effective visualizations, and understanding how to communicate research findings using reproducible documents.\n\n👉 Dive deeper into these topics here:\n\nIntroduction: Basic Concepts\nGetting comfortable with R and RStudio\nData Wrangling\nData Visualisation\nCommunicating Research with Quarto"
   },
   {
     "objectID": "day_one.html#overview-day-one",
     "href": "day_one.html#overview-day-one",
-    "title": "R4HTA-India 2025",
+    "title": "R4HTA India 2025",
     "section": "",
-    "text": "Introduction: Basic Concepts\nGetting comfortable with R and RStudio\nData Wrangling\nData Visualisation\nCommunicating Research with Quarto"
+    "text": "Day 1 of the R4HTA India 2025 workshop introduced participants to the essentials of working with R for Health Technology Assessment. The sessions emphasized getting comfortable with R and RStudio, learning how to handle and clean data, creating effective visualizations, and understanding how to communicate research findings using reproducible documents.\n\n👉 Dive deeper into these topics here:\n\nIntroduction: Basic Concepts\nGetting comfortable with R and RStudio\nData Wrangling\nData Visualisation\nCommunicating Research with Quarto"
   },
   {
     "objectID": "data_visual.html",
@@ -387,9 +387,9 @@
   {
     "objectID": "day_two.html#topics-covered-today",
     "href": "day_two.html#topics-covered-today",
-    "title": "R4HTA-India 2025",
+    "title": "R4HTA India 2025",
     "section": "Topics Covered Today",
-    "text": "Topics Covered Today\n\nProbability Distributions\nMarkov Modeling: A Detailed Guide\nHomogeneous Markov Model in heemod: PCI vs CABG"
+    "text": "Topics Covered Today\n\nDecision Tree (HTA) — Step-by-Step in Tidyverse\nMarkov Modeling: A Detailed Guide\nHomogeneous Markov Model in heemod: PCI vs CABG\nProbability Distributions"
   },
   {
     "objectID": "fundamentals_dplyr_v2.html",
@@ -593,5 +593,152 @@
     "title": "Probability Distributions for Health Technology Assessment",
     "section": "Case Study",
     "text": "Case Study\n\nData\n\nlibrary(tidyverse)\nlibrary(here)\n\ndf &lt;- readxl::read_excel(here(\"data\", \"distributions_hta_casestudy.xlsx\"))\n\nkableExtra::kable(df, format.args = list(big.mark = \",\", scientific = FALSE))\n\n\n\n\nvariable\nroot_definition\ndistribution\n\n\n\n\ncost_annualmaintenance\n150,000.0000000\nGamma\n\n\ncost_icuday\n9,350.0000000\nGamma\n\n\ncost_ip_day\n2,300.0000000\nGamma\n\n\ncost_pcv13\n3,955.0000000\nGamma\n\n\ncost_vaccination_transport\n100.0000000\nGamma\n\n\ncost_vaccineadministration\n116.0000000\nGamma\n\n\nhospitaldays_Ipd\n19.9000000\nGamma\n\n\nhospitaldays_Npp\n12.0000000\nGamma\n\n\nicudays_ipd\n9.0000000\nGamma\n\n\nicudays_npp\n6.0000000\nGamma\n\n\ninitprob_highrisk\n1.0000000\nLogN\n\n\nprob_death\n0.0091000\nLogN\n\n\nprob_deathippneumonia\n0.0136000\nLogN\n\n\nprob_ipddisabled\n0.0128000\nLogN\n\n\nprob_ippneumonia\n0.0035997\nLogN\n\n\nprob_meningitis\n0.0000212\nLogN\n\n\nprob_meningitisdeath\n0.1538000\nLogN\n\n\nprob_nppdisabled\n0.0064000\nLogN\n\n\nprob_oppneumonia\n0.0169631\nLogN\n\n\nprob_sepsis\n0.0000630\nLogN\n\n\nprob_sepsisdeath\n0.1681000\nLogN\n\n\nprop_icu_ipd\n0.3100000\nLogN\n\n\nprop_icu_npp\n0.1530000\nLogN\n\n\nu_disabled\n0.3000000\nBeta\n\n\nu_general\n0.9283000\nBeta\n\n\n\n\n\n\n\nTransforming Data\n\nowsa_range &lt;- 0.2\n\ndf &lt;- df |&gt; \n  mutate(\n    low = round((1 - owsa_range) * root_definition, 4),\n    high = round((1 + owsa_range) * root_definition, 4),\n    se = round( (high - low) / (2 * qnorm(0.975)), 4) \n  )\n\ndf &lt;- df |&gt;\n  mutate(\n    # Calculate alpha and beta for Gamma/Beta, meanlog and sdlog for LogN\n    param1 = case_when(\n      distribution == \"Gamma\" ~ (root_definition^2) / (se^2),\n      distribution == \"Beta\" ~ root_definition * ( (root_definition*(1-root_definition)/(se^2)) - 1 ),\n      distribution == \"LogN\" ~ log(root_definition^2 / sqrt(se^2 + root_definition^2)),\n      TRUE ~ NA_real_\n    ),\n    param2 = case_when(\n      distribution == \"Gamma\" ~ root_definition / (se^2),\n      distribution == \"Beta\" ~ (1 - root_definition) * ( (root_definition*(1-root_definition)/(se^2)) - 1 ),\n      distribution == \"LogN\" ~ sqrt(log(1 + (se^2 / root_definition^2))),\n      TRUE ~ NA_real_\n    ),\n    # Create the formatted parameter strings for R with correct argument names\n    parameters = case_when(\n      distribution == \"Gamma\" ~ paste0(\"shape = \", round(param1, 4), \", rate = \", round(param2, 6)),\n      distribution == \"Beta\" ~ paste0(\"shape1 = \", round(param1, 4), \", shape2 = \", round(param2, 4)),\n      distribution == \"LogN\" ~ paste0(\"meanlog = \", round(param1, 4), \", sdlog = \", round(param2, 4)),\n      TRUE ~ \"Distribution not specified\"\n    )\n  )\n\n\n\nSampling and Visualising Distributions\n\nFor Gamma Distribution\n\ndf |&gt; \n  filter(distribution == \"Gamma\") |&gt; \n  slice(1) |&gt; \n  select(parameters)\n\n# A tibble: 1 × 1\n  parameters                     \n  &lt;chr&gt;                          \n1 shape = 96.0365, rate = 0.00064\n\nset.seed(123)\nsamples_gamma &lt;- rgamma(1000, shape = 96.0365, rate = 0.00064)\n\nhist(samples_gamma, probability = TRUE, breaks = 30, col = \"lightblue\", \n     main = \"Histogram with Gamma PDF\", xlab = \"Value\")\ncurve(dgamma(x, shape = 96.0365, rate = 0.00064), col = \"red\", add = TRUE, lwd = 2)\n\n\n\n\n\n\n\n\n\n\nFor Beta Distribution\n\ndf |&gt; \n  filter(distribution == \"Beta\") |&gt; \n  slice(1) |&gt; \n  select(parameters)\n\n# A tibble: 1 × 1\n  parameters                         \n  &lt;chr&gt;                              \n1 shape1 = 66.9818, shape2 = 156.2909\n\nset.seed(123)\nsamples_beta &lt;- rbeta(1000, shape1 = 66.9818, shape2 = 156.2909) \n\nhist(samples_beta, probability = TRUE, breaks = 30, col = \"lightgreen\", \n     main = \"Histogram with Beta PDF\", xlab = \"Value\", xlim = c(0,1))\ncurve(dbeta(x, shape1 = 66.9818, shape2 = 156.2909), col = \"blue\", add = TRUE, lwd = 2)\n\n\n\n\n\n\n\n\n\n\nFor Log Normal Distribution\n\ndf |&gt; \n  filter(distribution == \"LogN\") |&gt; \n  slice(1) |&gt; \n  select(parameters)\n\n# A tibble: 1 × 1\n  parameters                       \n  &lt;chr&gt;                            \n1 meanlog = -0.0052, sdlog = 0.1017\n\nset.seed(123)\nsamples_lnorm &lt;- rlnorm(1000, meanlog = -0.0052, sdlog = 0.1017) # Use your calculated param1 & param2\n\nhist(samples_lnorm, probability = TRUE, breaks = 30, col = \"lightcoral\", \n     main = \"Histogram with Log-Normal PDF\", xlab = \"Value\")\ncurve(dlnorm(x, meanlog = -0.0052, sdlog = 0.1017), col = \"purple\", add = TRUE, lwd = 2)"
+  },
+  {
+    "objectID": "gallery.html",
+    "href": "gallery.html",
+    "title": "Gallery",
+    "section": "",
+    "text": "R4HTA-India 2025 · One Team, One Vision\n\n\n\n\n\n\n\n\nKnowledge in Action · R4HTA-India 2025 Sessions\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nR4HTA-India 2025 · The Organising Team"
+  },
+  {
+    "objectID": "index.html#schedule",
+    "href": "index.html#schedule",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "Schedule",
+    "text": "Schedule\n\nDay 1 (9th Sept 2025)\n\n\n\n\n\n\n\n\n\nTime\nSession\nTopics & Activities\nInstructor\n\n\n\n\n09:00-10:00\nWelcome & Setup\nWhy R for HTA? Reproducibility, power, and transparency Guided installation of R and RStudio Workshop overview and objectives\nProf. Biju Soman & Prof. Abhijit Pakhare\n\n\n10:00-11:00\nRStudio & R Basics\n-RStudio interface: Script, Console, Environment, and Plots panes Core concepts: Objects, vectors, and data frames Hands-on practice with basic R commands\nDr. Arun Mitra\n\n\n11:00-11:15\nCoffee Break\n\n\n\n\n11:15-12:15\nData Import & Inspection\nData import functions: read_csv(), readxl() Data inspection: head(), str(), summary(), glimpse() Activity: Load HTA dataset and explore structure\nProf. Abhijit Pakhare & Dr. Arun Mitra\n\n\n12:15-13:00\nData Wrangling (dplyr)\nCore verbs: select(), filter(), arrange(), mutate() The pipe operator\nDr. Arun Mitra\n\n\n14:00-15:15\nDecision Tree Modeling\nTheory: Decision nodes, chance nodes, and terminal nodes Activity: Code and run a decision tree to calculate expected costs and QALYs\nProf. Biju Soman & Prof. Abhijit Pakhare\n\n\n15:15-15:30\nCoffee Break\n\n\n\n\n15:30-16:15\nData Visualization (ggplot2)\nGrammar of Graphics: aes() mapping and geom_ layers Activity: Create cost distributions and outcome visualizations\nDr. Rehna Mohamed & Mr. Arun Jose\n\n\n16:15-17:30\nGroup Activity\nHands-on\nAll\n\n\n\n\n\nDay 2 (10th Sept 2025)\n\n\n\n\n\n\n\n\n\nTime\nSession\nTopics & Activities\nInstructor\n\n\n\n\n09:00-10:00\nModeling Concepts\nMarkov model fundamentals: States, transitions, and cyclesActivity: Define model parameters (costs, utilities, probabilities) as R objects\nProf. Abhijit Pakhare & Dr. Ashis John\n\n\n10:00-11:00\nBuilding the Engine\nTransition matrices: Movement probabilitiesActivity: Create state cost and utility vectors\nProf. Abhijit Pakhare & Dr. Arun Mitra\n\n\n11:00-11:15\nCoffee Break\n\n\n\n\n11:15-12:00\nRunning the Model\nImplementation using for loopsActivity: Run simulation and aggregate costs and QALYs for treatment strategies\nProf. Abhijit Pakhare\n\n\n12:00-13:00\nPSA Setup\nProbabilistic sensitivity analysis theory Activity: Define distributions for parameters using rbeta(), rgamma()\nDr. Ashis John & Mr. Arun Jose\n\n\n14:00-15:00\nRunning the PSA\nMonte Carlo simulation implementation Activity: Execute PSA with 1,000+ iterations and store results\nProf. Abhijit Pakhare\n\n\n15:00-15:45\nVisualizing PSA Results\nCost-effectiveness plane and acceptability curves Activity: Create publication-ready HTA visualizations using ggplot2\nProf. Biju Soman & Dr. Arun Mitra\n\n\n15:45-16:00\nCoffee Break\n\n\n\n\n16:00-16:45\nInteractive Reporting\nQuarto and Shiny integration Activity: Develop interactive HTA report and application\nProf. Abhijit Pakhare\n\n\n16:45-17:30\nClosing Remarks\nValedictory and Feedback\nAll"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "",
+    "text": "Your content here…"
+  },
+  {
+    "objectID": "index.html#welcome-to-r4hta-india-2025",
+    "href": "index.html#welcome-to-r4hta-india-2025",
+    "title": "R4HTA-India 2025",
+    "section": "Welcome to R4HTA-India 2025",
+    "text": "Welcome to R4HTA-India 2025\nYour content here…"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Us",
+    "section": "",
+    "text": "To facilitate the process of transparent and evidence informed decision making in the field of health, Government of India has created an institutional arrangement called the Health Technology Assessment in India (HTAIn) under the Department of Health Research (DHR). HTAIn is entrusted with the responsibility to collate and where needed generate evidence related to the clinical effectiveness, cost-effectiveness, and safety of medicines, devices and health programs using the Health Technology Assessment (HTA) approach.\nImportance of Health Technology Assessment-The Government of India is committed to extend healthcare services to its 1.44 billion population and is constantly making endeavours to provide affordable and quality healthcare. The government strives to provide affordable healthcare to its citizens within the available resources with optimal resource allocation. Health Technology Assessment (HTA), is a widely used methodology globally, for evidence generation for decision making in healthcare sector and for optimization of resource utilization in health. HTA provides systematic evaluation of properties, effects and/or impacts of health technologies or interventions. The assessment is conducted by interdisciplinary groups using explicit analytical frameworks, drawing on clinical, epidemiological, health economic and other information and methodologies. It may be applied to evaluate health interventions andpublic health programmes, priority setting in health care, identifying cost effectiveness thresholds for medicines and other technologies based on their cost–effectiveness, and for guiding the development of clinical guidelines. “Health technology or Health intervention” refers to an application of organized knowledge and skills in the form of diagnostics, devices, drugs including their formulations and delivery systems, vaccines, procedures, novel therapeutics, health programmes and systems developed to address a health problem and improve quality of lives including digital technologies”. Department of Health Research, MoHFW initiated a pilot programme on Health technology Assessment (HTA) in April 2017 for evaluation of appropriateness and cost effectiveness of both existing and new health technologies in the country as part of “Research Governance” mandate of the Department. In June 2021, the HTA was approved as a sub scheme under the umbrella Scheme of Human Resource and Capacity Development. Office of the Health Technology Assessment in India (HTAIn) has been approved for establishment as an attached office with 4 divisions on 9 th May 2023. The Department of Expenditure has also approved the constitution of the attached office in Department of Health Research with creation of 15 scientific and administrative posts. There are eight Resource Hubs and over 20 resource centres under HTAIn. Regional resource Centre at Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST),Trivandrum is one among those."
+  },
+  {
+    "objectID": "about.html#health-technology-assessment-in-india-htain",
+    "href": "about.html#health-technology-assessment-in-india-htain",
+    "title": "About Us",
+    "section": "",
+    "text": "To facilitate the process of transparent and evidence informed decision making in the field of health, Government of India has created an institutional arrangement called the Health Technology Assessment in India (HTAIn) under the Department of Health Research (DHR). HTAIn is entrusted with the responsibility to collate and where needed generate evidence related to the clinical effectiveness, cost-effectiveness, and safety of medicines, devices and health programs using the Health Technology Assessment (HTA) approach.\nImportance of Health Technology Assessment-The Government of India is committed to extend healthcare services to its 1.44 billion population and is constantly making endeavours to provide affordable and quality healthcare. The government strives to provide affordable healthcare to its citizens within the available resources with optimal resource allocation. Health Technology Assessment (HTA), is a widely used methodology globally, for evidence generation for decision making in healthcare sector and for optimization of resource utilization in health. HTA provides systematic evaluation of properties, effects and/or impacts of health technologies or interventions. The assessment is conducted by interdisciplinary groups using explicit analytical frameworks, drawing on clinical, epidemiological, health economic and other information and methodologies. It may be applied to evaluate health interventions andpublic health programmes, priority setting in health care, identifying cost effectiveness thresholds for medicines and other technologies based on their cost–effectiveness, and for guiding the development of clinical guidelines. “Health technology or Health intervention” refers to an application of organized knowledge and skills in the form of diagnostics, devices, drugs including their formulations and delivery systems, vaccines, procedures, novel therapeutics, health programmes and systems developed to address a health problem and improve quality of lives including digital technologies”. Department of Health Research, MoHFW initiated a pilot programme on Health technology Assessment (HTA) in April 2017 for evaluation of appropriateness and cost effectiveness of both existing and new health technologies in the country as part of “Research Governance” mandate of the Department. In June 2021, the HTA was approved as a sub scheme under the umbrella Scheme of Human Resource and Capacity Development. Office of the Health Technology Assessment in India (HTAIn) has been approved for establishment as an attached office with 4 divisions on 9 th May 2023. The Department of Expenditure has also approved the constitution of the attached office in Department of Health Research with creation of 15 scientific and administrative posts. There are eight Resource Hubs and over 20 resource centres under HTAIn. Regional resource Centre at Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST),Trivandrum is one among those."
+  },
+  {
+    "objectID": "about.html#regional-resource-centre-for-health-technology-assessment---amchss-sctimst-trivandrum",
+    "href": "about.html#regional-resource-centre-for-health-technology-assessment---amchss-sctimst-trivandrum",
+    "title": "About Us",
+    "section": "Regional Resource Centre for Health Technology Assessment - AMCHSS, SCTIMST Trivandrum",
+    "text": "Regional Resource Centre for Health Technology Assessment - AMCHSS, SCTIMST Trivandrum\n\nAn overview\n\nThe Regional Resource Centre for Health Technology Assessment (RRH-HTAIn) was established in Achutha Menon Centre for Health Science Studies (AMCHSS), Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Trivandrum on 27/02/2018 (Fig. 1). The mandate of the RRC-HTAIn at SCTIMST is to conduct research, capacitate, and generate quality evidence to support health policy decision-making in Kerala, to achieve Universal Health Coverage. Dr. Biju Soman (Professor, AMCHSS) is the Principal Investigator. Other staff members of the resource centre include Dr. Ashis John, Dr. Rehna C Mohamed, Mr. Abhilash Kurup and Ms. Chandini Babu.\n\n\n\n\nFigure 1: Shri. Dr. Harsh Vardhan, Minister of Health and Family Welfare, inaugurating the HTA unit in presence of Shri. Kadakampally Surendran, Minister for Co-Operation, Tourism, and Devaswom."
+  },
+  {
+    "objectID": "index.html#workshop-objective",
+    "href": "index.html#workshop-objective",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "Workshop Objective",
+    "text": "Workshop Objective\n\nThe two-day intensive training bridged traditional Health Technology Assessment (HTA) methods with modern R-based computational approaches, enhancing reproducibility, transparency, and analytical rigor in health economic evaluations."
+  },
+  {
+    "objectID": "index.html#when-where",
+    "href": "index.html#when-where",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "When & Where",
+    "text": "When & Where\n\n\nDates: 9–10 September 2025\n\nVenue: Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram"
+  },
+  {
+    "objectID": "index.html#what-participants-learned",
+    "href": "index.html#what-participants-learned",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "What Participants Learned",
+    "text": "What Participants Learned\n\nParticipants gained hands-on experience in:\n- Basics of R programming for HTA\n- Building Decision Trees & Markov Models\n- Running Probabilistic Sensitivity Analysis (PSA)\n- Creating cost-effectiveness visualizations\n- Developing interactive HTA reports"
+  },
+  {
+    "objectID": "data_dwnld.html",
+    "href": "data_dwnld.html",
+    "title": "Data",
+    "section": "",
+    "text": "pci_cabg_data.csv\ndistributions_hta_casestudy.xlsx\nlow_birth_weight.csv\nnhanes_basic_info.csv\nnhanes_behaviour_info.rds\nnhanes_clinical_info.rds\nnhanes_modified_df.rds"
+  },
+  {
+    "objectID": "data_dwnld.html#datasets",
+    "href": "data_dwnld.html#datasets",
+    "title": "Data",
+    "section": "",
+    "text": "pci_cabg_data.csv\ndistributions_hta_casestudy.xlsx\nlow_birth_weight.csv\nnhanes_basic_info.csv\nnhanes_behaviour_info.rds\nnhanes_clinical_info.rds\nnhanes_modified_df.rds"
+  },
+  {
+    "objectID": "index.html#facilitators",
+    "href": "index.html#facilitators",
+    "title": "Welcome to R4HTA-India 2025",
+    "section": "Facilitators",
+    "text": "Facilitators\n\n\n\n\n\n\n\n\nDr. Biju SomanPI, Regional Resource Centre - HTA,SCTIMST, Trivandrum\n\n\n\nDr. Abhijit PakharePI, Regional Resource Centre - HTA,AIIMS — Bhopal\n\n\n\nDr. Arun MitraAssistant Professor,AIIMS — Bibinagar, Hyderabad\n\n\n\nDr. Ashis Samuel JohnScientist - C, RRC - HTA,SCTIMST, Trivandrum\n\n\n\nDr. Rehna C MohamedHealth Economist, RRC - HTA,SCTIMST, Trivandrum\n\n\n\nMr. Arun JoseResearch Scholar,SCTIMST, Trivandrum"
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html",
+    "href": "decision_tree_step_by_step.html",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "",
+    "text": "A compact, reproducible Quarto document that builds a two-strategy decision tree (Test-and-Treat vs Treat-All) and prints every intermediate tibble, followed by a comparison table and an ICER line. Uses tidyverse + gt."
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html#notation",
+    "href": "decision_tree_step_by_step.html#notation",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "Notation",
+    "text": "Notation\nInline math renders via MathJax: prevalence \\(p\\), sensitivity \\(Se\\), specificity \\(Sp\\), willingness-to-pay \\(\\lambda\\)."
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html#setup-parameters",
+    "href": "decision_tree_step_by_step.html#setup-parameters",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "Setup & Parameters",
+    "text": "Setup & Parameters\n\nlibrary(dplyr)\nlibrary(tidyr)\nlibrary(gt)\n\n# Pretty table helper\nshow_tbl &lt;- function(x, title = NULL, subtitle = NULL) {\n  gt(x) |&gt;\n    tab_header(\n      title = if (!is.null(title)) md(title) else md(\"\"),\n      subtitle = if (!is.null(subtitle)) md(subtitle) else md(\"\")\n    )\n}\n\n# Parameters (modify as needed)\nparams &lt;- tibble::tribble(\n  ~name, ~value,\n  \"p\",            0.20,     # prevalence\n  \"Se\",           0.90,     # sensitivity\n  \"Sp\",           0.95,     # specificity\n  \"c_test\",       800,      # test cost\n  \"c_treat\",      2000,     # treatment cost\n  \"c_dz_untx\",    50000,    # residual disease cost if untreated\n  \"c_dz_tx\",      20000,    # residual disease cost if treated\n  \"c_overtx\",     1000,     # unnecessary treatment / AE cost\n  \"q_healthy\",    1.00,\n  \"q_dz_untx\",    0.70,\n  \"q_dz_tx\",      0.85,\n  \"q_overtx\",     0.98,\n  \"lambda\",       100000    # WTP per QALY (₹)\n) |&gt;\n  pivot_wider(names_from = name, values_from = value)\n\nparams |&gt; show_tbl(\"Parameters (values)\")\n\n\n\n\n\n\n\nParameters (values)\n\n\n\n\n\np\nSe\nSp\nc_test\nc_treat\nc_dz_untx\nc_dz_tx\nc_overtx\nq_healthy\nq_dz_untx\nq_dz_tx\nq_overtx\nlambda\n\n\n\n\n0.2\n0.9\n0.95\n800\n2000\n50000\n20000\n1000\n1\n0.7\n0.85\n0.98\n1e+05\n\n\n\n\n\n\n\nMaking scalars parameters for readability\n\n# Pull scalars for readability (helps teaching & debugging)\np         &lt;- params$p\nSe        &lt;- params$Se\nSp        &lt;- params$Sp\nc_test    &lt;- params$c_test\nc_treat   &lt;- params$c_treat\nc_dz_untx &lt;- params$c_dz_untx\nc_dz_tx   &lt;- params$c_dz_tx\nc_overtx  &lt;- params$c_overtx\nq_healthy &lt;- params$q_healthy\nq_dz_untx &lt;- params$q_dz_untx\nq_dz_tx   &lt;- params$q_dz_tx\nq_overtx  &lt;- params$q_overtx\nlambda    &lt;- params$lambda"
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html#strategy-a-test-and-treat-step-by-step",
+    "href": "decision_tree_step_by_step.html#strategy-a-test-and-treat-step-by-step",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "Strategy A (Test-and-Treat): Step-by-Step",
+    "text": "Strategy A (Test-and-Treat): Step-by-Step\n\nChance node: Disease status\n\ndisease &lt;- tibble(\n  disease   = c(TRUE, FALSE),\n  p_disease = c(p, 1 - p)\n)\n\nstopifnot(abs(sum(disease$p_disease) - 1) &lt; 1e-10)\n\ndisease |&gt; show_tbl(\"Chance node: disease status\", \"Rows sum to 1\")\n\n\n\n\n\n\n\nChance node: disease status\n\n\nRows sum to 1\n\n\ndisease\np_disease\n\n\n\n\nTRUE\n0.2\n\n\nFALSE\n0.8\n\n\n\n\n\n\n\n\n\nConditional test distributions\n\ntest_given_dz &lt;- tibble(\n  disease         = TRUE,\n  test            = c(\"pos\", \"neg\"),\n  p_test_given_dz = c(Se, 1 - Se)\n)\n\nstopifnot(abs(sum(test_given_dz$p_test_given_dz) - 1) &lt; 1e-10)\n\ntest_given_dz |&gt; show_tbl(\"Conditional: P(test | disease = TRUE)\")\n\n\n\n\n\n\n\nConditional: P(test | disease = TRUE)\n\n\n\n\n\ndisease\ntest\np_test_given_dz\n\n\n\n\nTRUE\npos\n0.9\n\n\nTRUE\nneg\n0.1\n\n\n\n\n\n\n\n\ntest_given_nodz &lt;- tibble(\n  disease         = FALSE,\n  test            = c(\"pos\", \"neg\"),\n  p_test_given_dz = c(1 - Sp, Sp)\n)\n\nstopifnot(abs(sum(test_given_nodz$p_test_given_dz) - 1) &lt; 1e-10)\n\ntest_given_nodz |&gt; show_tbl(\"Conditional: P(test | disease = FALSE)\")\n\n\n\n\n\n\n\nConditional: P(test | disease = FALSE)\n\n\n\n\n\ndisease\ntest\np_test_given_dz\n\n\n\n\nFALSE\npos\n0.05\n\n\nFALSE\nneg\n0.95\n\n\n\n\n\n\n\n\ntest &lt;- bind_rows(test_given_dz, test_given_nodz)\ntest |&gt; show_tbl(\"Combined conditional table: P(test | disease)\")\n\n\n\n\n\n\n\nCombined conditional table: P(test | disease)\n\n\n\n\n\ndisease\ntest\np_test_given_dz\n\n\n\n\nTRUE\npos\n0.90\n\n\nTRUE\nneg\n0.10\n\n\nFALSE\npos\n0.05\n\n\nFALSE\nneg\n0.95\n\n\n\n\n\n\n\n\n\nDecision node (rule)\n\ndecision &lt;- tibble(\n  test  = c(\"pos\", \"neg\"),\n  treat = c(TRUE, FALSE)\n)\n\ndecision |&gt; show_tbl(\"Decision node: rule for Test-and-Treat\")\n\n\n\n\n\n\n\nDecision node: rule for Test-and-Treat\n\n\n\n\n\ntest\ntreat\n\n\n\n\npos\nTRUE\n\n\nneg\nFALSE\n\n\n\n\n\n\n\n\n\nEnumerate terminal paths + joint probabilities\n\ntree_A &lt;- disease |&gt;\n  left_join(test, by = \"disease\") |&gt;\n  left_join(decision, by = \"test\") |&gt;\n  mutate(\n    path_prob = p_disease * p_test_given_dz\n  )\n\nstopifnot(abs(sum(tree_A$path_prob) - 1) &lt; 1e-10)\n\ntree_A |&gt;\n  select(disease, test, treat, p_disease, p_test_given_dz, path_prob) |&gt;\n  show_tbl(\"Terminal paths with joint probabilities\", \"Sum(path_prob) = 1\")\n\n\n\n\n\n\n\nTerminal paths with joint probabilities\n\n\nSum(path_prob) = 1\n\n\ndisease\ntest\ntreat\np_disease\np_test_given_dz\npath_prob\n\n\n\n\nTRUE\npos\nTRUE\n0.2\n0.90\n0.18\n\n\nTRUE\nneg\nFALSE\n0.2\n0.10\n0.02\n\n\nFALSE\npos\nTRUE\n0.8\n0.05\n0.04\n\n\nFALSE\nneg\nFALSE\n0.8\n0.95\n0.76\n\n\n\n\n\n\n\n\n\nCosts at terminal nodes\n\ntree_A &lt;- tree_A |&gt;\n  mutate(\n    cost_test  = c_test,                          # everyone tested in Strategy A\n    cost_tx    = if_else(treat, c_treat, 0),\n    cost_dz    = case_when(\n      disease &  treat ~ c_dz_tx,                 # diseased + treated\n      disease & !treat ~ c_dz_untx,               # diseased + untreated\n      !disease & treat ~ c_overtx,                # over-treatment\n      TRUE             ~ 0                        # healthy + not treated\n    ),\n    cost_total = cost_test + cost_tx + cost_dz\n  )\n\ntree_A |&gt;\n  select(disease, test, treat, path_prob, cost_test, cost_tx, cost_dz, cost_total) |&gt;\n  show_tbl(\"Terminal paths with costs\")\n\n\n\n\n\n\n\nTerminal paths with costs\n\n\n\n\n\ndisease\ntest\ntreat\npath_prob\ncost_test\ncost_tx\ncost_dz\ncost_total\n\n\n\n\nTRUE\npos\nTRUE\n0.18\n800\n2000\n20000\n22800\n\n\nTRUE\nneg\nFALSE\n0.02\n800\n0\n50000\n50800\n\n\nFALSE\npos\nTRUE\n0.04\n800\n2000\n1000\n3800\n\n\nFALSE\nneg\nFALSE\n0.76\n800\n0\n0\n800\n\n\n\n\n\n\n\n\n\nQALYs at terminal nodes\n\ntree_A &lt;- tree_A |&gt;\n  mutate(\n    qaly = case_when(\n      disease &  treat ~ q_dz_tx,     # treated disease\n      disease & !treat ~ q_dz_untx,   # untreated disease\n      !disease & treat ~ q_overtx,    # unnecessary treatment\n      TRUE             ~ q_healthy    # healthy, no treatment\n    )\n  )\n\ntree_A |&gt;\n  select(disease, test, treat, path_prob, qaly) |&gt;\n  show_tbl(\"Terminal paths with QALYs\")\n\n\n\n\n\n\n\nTerminal paths with QALYs\n\n\n\n\n\ndisease\ntest\ntreat\npath_prob\nqaly\n\n\n\n\nTRUE\npos\nTRUE\n0.18\n0.85\n\n\nTRUE\nneg\nFALSE\n0.02\n0.70\n\n\nFALSE\npos\nTRUE\n0.04\n0.98\n\n\nFALSE\nneg\nFALSE\n0.76\n1.00\n\n\n\n\n\n\n\n\n\nExpected values (Strategy A)\n\nstrat_A &lt;- tree_A |&gt;\n  summarise(\n    EV_cost = sum(path_prob * cost_total),\n    EV_qaly = sum(path_prob * qaly),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    strategy = \"Test-and-Treat\",\n    NMB      = EV_qaly * lambda - EV_cost\n  )\n\nstrat_A |&gt; show_tbl(\"Expected values (Strategy A)\", \"E[Cost], E[QALY], and NMB\")\n\n\n\n\n\n\n\nExpected values (Strategy A)\n\n\nE[Cost], E[QALY], and NMB\n\n\nEV_cost\nEV_qaly\nstrategy\nNMB\n\n\n\n\n5880\n0.9662\nTest-and-Treat\n90740"
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html#strategy-b-treat-all-step-by-step",
+    "href": "decision_tree_step_by_step.html#strategy-b-treat-all-step-by-step",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "Strategy B (Treat-All): Step-by-Step",
+    "text": "Strategy B (Treat-All): Step-by-Step\n\nChance node (same p)\n\ndisease_B &lt;- tibble(\n  disease   = c(TRUE, FALSE),\n  p_disease = c(p, 1 - p)\n)\n\nstopifnot(abs(sum(disease_B$p_disease) - 1) &lt; 1e-10)\n\ndisease_B |&gt; show_tbl(\"Chance node (B): disease status\", \"Rows sum to 1\")\n\n\n\n\n\n\n\nChance node (B): disease status\n\n\nRows sum to 1\n\n\ndisease\np_disease\n\n\n\n\nTRUE\n0.2\n\n\nFALSE\n0.8\n\n\n\n\n\n\n\n\n\nEnumerate terminal paths (no testing; everyone treated)\n\ntree_B &lt;- disease_B |&gt;\n  mutate(\n    treat     = TRUE,\n    path_prob = p_disease        # joint prob = P(disease) (no test split)\n  )\n\nstopifnot(abs(sum(tree_B$path_prob) - 1) &lt; 1e-10)\n\ntree_B |&gt;\n  select(disease, treat, p_disease, path_prob) |&gt;\n  show_tbl(\"Terminal paths (B) with probabilities\", \"Sum(path_prob) = 1\")\n\n\n\n\n\n\n\nTerminal paths (B) with probabilities\n\n\nSum(path_prob) = 1\n\n\ndisease\ntreat\np_disease\npath_prob\n\n\n\n\nTRUE\nTRUE\n0.2\n0.2\n\n\nFALSE\nTRUE\n0.8\n0.8\n\n\n\n\n\n\n\n\n\nCosts at terminal nodes (B)\n\ntree_B &lt;- tree_B |&gt;\n  mutate(\n    cost_test  = 0,\n    cost_tx    = c_treat,                       # everyone gets treatment\n    cost_dz    = if_else(disease, c_dz_tx, c_overtx),\n    cost_total = cost_test + cost_tx + cost_dz\n  )\n\ntree_B |&gt;\n  select(disease, treat, path_prob, cost_test, cost_tx, cost_dz, cost_total) |&gt;\n  show_tbl(\"Terminal paths (B) with costs\")\n\n\n\n\n\n\n\nTerminal paths (B) with costs\n\n\n\n\n\ndisease\ntreat\npath_prob\ncost_test\ncost_tx\ncost_dz\ncost_total\n\n\n\n\nTRUE\nTRUE\n0.2\n0\n2000\n20000\n22000\n\n\nFALSE\nTRUE\n0.8\n0\n2000\n1000\n3000\n\n\n\n\n\n\n\n\n\nQALYs at terminal nodes (B)\n\ntree_B &lt;- tree_B |&gt;\n  mutate(\n    qaly = if_else(disease, q_dz_tx, q_overtx)\n  )\n\ntree_B |&gt;\n  select(disease, treat, path_prob, qaly) |&gt;\n  show_tbl(\"Terminal paths (B) with QALYs\")\n\n\n\n\n\n\n\nTerminal paths (B) with QALYs\n\n\n\n\n\ndisease\ntreat\npath_prob\nqaly\n\n\n\n\nTRUE\nTRUE\n0.2\n0.85\n\n\nFALSE\nTRUE\n0.8\n0.98\n\n\n\n\n\n\n\n\n\nExpected values (Strategy B)\n\nstrat_B &lt;- tree_B |&gt;\n  summarise(\n    EV_cost = sum(path_prob * cost_total),\n    EV_qaly = sum(path_prob * qaly),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    strategy = \"Treat-All\",\n    NMB      = EV_qaly * lambda - EV_cost\n  )\n\nstrat_B |&gt; show_tbl(\"Expected values (Strategy B)\", \"E[Cost], E[QALY], and NMB\")\n\n\n\n\n\n\n\nExpected values (Strategy B)\n\n\nE[Cost], E[QALY], and NMB\n\n\nEV_cost\nEV_qaly\nstrategy\nNMB\n\n\n\n\n6800\n0.954\nTreat-All\n88600"
+  },
+  {
+    "objectID": "decision_tree_step_by_step.html#comparison-a-vs-b-icer-nmb",
+    "href": "decision_tree_step_by_step.html#comparison-a-vs-b-icer-nmb",
+    "title": "Decision Tree (HTA) — Step-by-Step in Tidyverse",
+    "section": "Comparison: A vs B (ICER, NMB)",
+    "text": "Comparison: A vs B (ICER, NMB)\n\nresults_AB &lt;- bind_rows(\n  strat_A |&gt; select(strategy, EV_cost, EV_qaly, NMB),\n  strat_B |&gt; select(strategy, EV_cost, EV_qaly, NMB)\n) |&gt;\n  arrange(EV_cost)\n\nresults_AB |&gt;\n  show_tbl(\"Strategy comparison (ordered by expected cost)\")\n\n\n\n\n\n\n\nStrategy comparison (ordered by expected cost)\n\n\n\n\n\nstrategy\nEV_cost\nEV_qaly\nNMB\n\n\n\n\nTest-and-Treat\n5880\n0.9662\n90740\n\n\nTreat-All\n6800\n0.9540\n88600\n\n\n\n\n\n\n\n\nicer_AB &lt;- results_AB |&gt;\n  mutate(rank_cost = rank(EV_cost, ties.method = \"first\")) |&gt;\n  arrange(rank_cost) |&gt;\n  mutate(\n    dCost = EV_cost - lag(EV_cost),\n    dQALY = EV_qaly - lag(EV_qaly),\n    ICER  = dCost / dQALY\n  )\n\nicer_AB |&gt;\n  show_tbl(\"ICER table\", \"Computed for the costlier vs cheaper strategy\")\n\n\n\n\n\n\n\nICER table\n\n\nComputed for the costlier vs cheaper strategy\n\n\nstrategy\nEV_cost\nEV_qaly\nNMB\nrank_cost\ndCost\ndQALY\nICER\n\n\n\n\nTest-and-Treat\n5880\n0.9662\n90740\n1\nNA\nNA\nNA\n\n\nTreat-All\n6800\n0.9540\n88600\n2\n920\n-0.0122\n-75409.84\n\n\n\n\n\n\n\n\ndominance_note &lt;- {\n  cheaper &lt;- results_AB$strategy[1]\n  moreexp &lt;- results_AB$strategy[2]\n  if (!is.na(icer_AB$ICER[2]) && (results_AB$EV_qaly[2] &lt;= results_AB$EV_qaly[1])) {\n    \"The more costly strategy is weakly dominated (higher cost, no extra QALYs).\"\n  } else {\n    \"No simple dominance detected; interpret ICER relative to λ and consider NMB.\"\n  }\n}\n\nnmb_best &lt;- results_AB$strategy[which.max(results_AB$NMB)]\n\ntibble(\n  note = dominance_note,\n  lambda = lambda,\n  nmb_optimal_strategy = nmb_best\n) |&gt;\n  show_tbl(\"Decision notes\", \"Dominance & NMB-optimal strategy at current λ\")\n\n\n\n\n\n\n\nDecision notes\n\n\nDominance & NMB-optimal strategy at current λ\n\n\nnote\nlambda\nnmb_optimal_strategy\n\n\n\n\nThe more costly strategy is weakly dominated (higher cost, no extra QALYs).\n1e+05\nTest-and-Treat"
+  },
+  {
+    "objectID": "day_two.html",
+    "href": "day_two.html",
+    "title": "R4HTA India 2025",
+    "section": "",
+    "text": "Day 2 of the R4HTA India 2025 workshop focused on advanced Health Technology Assessment modeling and analysis in R. Participants learned how to build decision trees, implement Markov models, explore homogeneous Markov models using heemod, and understand probability distributions relevant for HTA applications.\n\n👉 Dive deeper into these topics here:\n\nDecision Tree (HTA) — Step-by-Step in Tidyverse\nMarkov Modeling: A Detailed Guide\nHomogeneous Markov Model in heemod: PCI vs CABG\nProbability Distributions"
+  },
+  {
+    "objectID": "day_two.html#overview-day-two",
+    "href": "day_two.html#overview-day-two",
+    "title": "R4HTA India 2025",
+    "section": "",
+    "text": "Day 2 of the R4HTA India 2025 workshop focused on advanced Health Technology Assessment modeling and analysis in R. Participants learned how to build decision trees, implement Markov models, explore homogeneous Markov models using heemod, and understand probability distributions relevant for HTA applications.\n\n👉 Dive deeper into these topics here:\n\nDecision Tree (HTA) — Step-by-Step in Tidyverse\nMarkov Modeling: A Detailed Guide\nHomogeneous Markov Model in heemod: PCI vs CABG\nProbability Distributions"
   }
 ]

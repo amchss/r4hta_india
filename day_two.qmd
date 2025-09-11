@@ -1,21 +1,21 @@
 ---
 embed-resources: true
 ---
-
 ## Overview: Day Two
 
+:::{style="text-align:justify"}
+Day 2 of the R4HTA India 2025 workshop focused on advanced Health Technology Assessment modeling and analysis in R. Participants learned how to build **decision trees**, implement **Markov models**, explore **homogeneous Markov models using heemod**, and understand **probability distributions** relevant for HTA applications.
+:::
 
-## Topics Covered Today
+👉 Dive deeper into these topics here:  
 
-- [Probability Distributions](prob_dist_20250908_v1.qmd)
-
+- [Decision Tree (HTA) — Step-by-Step in Tidyverse](decision_tree_step_by_step.qmd)
 
 - [Markov Modeling: A Detailed Guide](markov_step_by_step_Base.qmd)
 
 - [Homogeneous Markov Model in heemod: PCI vs CABG](PCI_vs_CABG_heemod.qmd)
 
-
-
+- [Probability Distributions](prob_dist_20250908_v1.qmd)
 
 
 

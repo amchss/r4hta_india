@@ -1,0 +1,350 @@
+---
+title: "Decision Tree (HTA) — Step-by-Step in Tidyverse"
+---
+
+> A compact, reproducible Quarto document that builds a two-strategy decision tree (**Test-and-Treat** vs **Treat-All**) and prints **every intermediate tibble**, followed by a comparison table and an ICER line. Uses tidyverse + gt.
+
+## Notation
+
+Inline math renders via MathJax: prevalence $p$, sensitivity $Se$, specificity $Sp$, willingness-to-pay $\lambda$.
+
+---
+
+## Setup & Parameters
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+library(dplyr)
+library(tidyr)
+library(gt)
+
+# Pretty table helper
+show_tbl <- function(x, title = NULL, subtitle = NULL) {
+  gt(x) |>
+    tab_header(
+      title = if (!is.null(title)) md(title) else md(""),
+      subtitle = if (!is.null(subtitle)) md(subtitle) else md("")
+    )
+}
+
+# Parameters (modify as needed)
+params <- tibble::tribble(
+  ~name, ~value,
+  "p",            0.20,     # prevalence
+  "Se",           0.90,     # sensitivity
+  "Sp",           0.95,     # specificity
+  "c_test",       800,      # test cost
+  "c_treat",      2000,     # treatment cost
+  "c_dz_untx",    50000,    # residual disease cost if untreated
+  "c_dz_tx",      20000,    # residual disease cost if treated
+  "c_overtx",     1000,     # unnecessary treatment / AE cost
+  "q_healthy",    1.00,
+  "q_dz_untx",    0.70,
+  "q_dz_tx",      0.85,
+  "q_overtx",     0.98,
+  "lambda",       100000    # WTP per QALY (₹)
+) |>
+  pivot_wider(names_from = name, values_from = value)
+
+params |> show_tbl("Parameters (values)")
+```
+
+Making scalars parameters for readability
+
+```{r}
+#| label: scalars
+# Pull scalars for readability (helps teaching & debugging)
+p         <- params$p
+Se        <- params$Se
+Sp        <- params$Sp
+c_test    <- params$c_test
+c_treat   <- params$c_treat
+c_dz_untx <- params$c_dz_untx
+c_dz_tx   <- params$c_dz_tx
+c_overtx  <- params$c_overtx
+q_healthy <- params$q_healthy
+q_dz_untx <- params$q_dz_untx
+q_dz_tx   <- params$q_dz_tx
+q_overtx  <- params$q_overtx
+lambda    <- params$lambda
+```
+
+---
+
+## Strategy A (Test-and-Treat): Step-by-Step
+
+### Chance node: Disease status
+
+```{r}
+#| label: disease-node
+disease <- tibble(
+  disease   = c(TRUE, FALSE),
+  p_disease = c(p, 1 - p)
+)
+
+stopifnot(abs(sum(disease$p_disease) - 1) < 1e-10)
+
+disease |> show_tbl("Chance node: disease status", "Rows sum to 1")
+```
+
+### Conditional test distributions
+
+```{r}
+#| label: test-given-disease
+test_given_dz <- tibble(
+  disease         = TRUE,
+  test            = c("pos", "neg"),
+  p_test_given_dz = c(Se, 1 - Se)
+)
+
+stopifnot(abs(sum(test_given_dz$p_test_given_dz) - 1) < 1e-10)
+
+test_given_dz |> show_tbl("Conditional: P(test | disease = TRUE)")
+```
+
+```{r}
+#| label: test-given-no-disease
+test_given_nodz <- tibble(
+  disease         = FALSE,
+  test            = c("pos", "neg"),
+  p_test_given_dz = c(1 - Sp, Sp)
+)
+
+stopifnot(abs(sum(test_given_nodz$p_test_given_dz) - 1) < 1e-10)
+
+test_given_nodz |> show_tbl("Conditional: P(test | disease = FALSE)")
+```
+
+```{r}
+#| label: test-combined
+test <- bind_rows(test_given_dz, test_given_nodz)
+test |> show_tbl("Combined conditional table: P(test | disease)")
+```
+
+### Decision node (rule)
+
+```{r}
+#| label: decision-node
+decision <- tibble(
+  test  = c("pos", "neg"),
+  treat = c(TRUE, FALSE)
+)
+
+decision |> show_tbl("Decision node: rule for Test-and-Treat")
+```
+
+### Enumerate terminal paths + joint probabilities
+
+```{r}
+#| label: enumerate-paths
+tree_A <- disease |>
+  left_join(test, by = "disease") |>
+  left_join(decision, by = "test") |>
+  mutate(
+    path_prob = p_disease * p_test_given_dz
+  )
+
+stopifnot(abs(sum(tree_A$path_prob) - 1) < 1e-10)
+
+tree_A |>
+  select(disease, test, treat, p_disease, p_test_given_dz, path_prob) |>
+  show_tbl("Terminal paths with joint probabilities", "Sum(path_prob) = 1")
+```
+
+### Costs at terminal nodes
+
+```{r}
+#| label: attach-costs
+tree_A <- tree_A |>
+  mutate(
+    cost_test  = c_test,                          # everyone tested in Strategy A
+    cost_tx    = if_else(treat, c_treat, 0),
+    cost_dz    = case_when(
+      disease &  treat ~ c_dz_tx,                 # diseased + treated
+      disease & !treat ~ c_dz_untx,               # diseased + untreated
+      !disease & treat ~ c_overtx,                # over-treatment
+      TRUE             ~ 0                        # healthy + not treated
+    ),
+    cost_total = cost_test + cost_tx + cost_dz
+  )
+
+tree_A |>
+  select(disease, test, treat, path_prob, cost_test, cost_tx, cost_dz, cost_total) |>
+  show_tbl("Terminal paths with costs")
+```
+
+### QALYs at terminal nodes
+
+```{r}
+#| label: attach-qalys
+tree_A <- tree_A |>
+  mutate(
+    qaly = case_when(
+      disease &  treat ~ q_dz_tx,     # treated disease
+      disease & !treat ~ q_dz_untx,   # untreated disease
+      !disease & treat ~ q_overtx,    # unnecessary treatment
+      TRUE             ~ q_healthy    # healthy, no treatment
+    )
+  )
+
+tree_A |>
+  select(disease, test, treat, path_prob, qaly) |>
+  show_tbl("Terminal paths with QALYs")
+```
+
+### Expected values (Strategy A)
+
+```{r}
+#| label: expected-values
+strat_A <- tree_A |>
+  summarise(
+    EV_cost = sum(path_prob * cost_total),
+    EV_qaly = sum(path_prob * qaly),
+    .groups = "drop"
+  ) |>
+  mutate(
+    strategy = "Test-and-Treat",
+    NMB      = EV_qaly * lambda - EV_cost
+  )
+
+strat_A |> show_tbl("Expected values (Strategy A)", "E[Cost], E[QALY], and NMB")
+```
+
+---
+
+## Strategy B (Treat-All): Step-by-Step
+
+### Chance node (same p)
+
+```{r}
+#| label: disease-node-B
+disease_B <- tibble(
+  disease   = c(TRUE, FALSE),
+  p_disease = c(p, 1 - p)
+)
+
+stopifnot(abs(sum(disease_B$p_disease) - 1) < 1e-10)
+
+disease_B |> show_tbl("Chance node (B): disease status", "Rows sum to 1")
+```
+
+### Enumerate terminal paths (no testing; everyone treated)
+
+```{r}
+#| label: enumerate-paths-B
+tree_B <- disease_B |>
+  mutate(
+    treat     = TRUE,
+    path_prob = p_disease        # joint prob = P(disease) (no test split)
+  )
+
+stopifnot(abs(sum(tree_B$path_prob) - 1) < 1e-10)
+
+tree_B |>
+  select(disease, treat, p_disease, path_prob) |>
+  show_tbl("Terminal paths (B) with probabilities", "Sum(path_prob) = 1")
+```
+
+### Costs at terminal nodes (B)
+
+```{r}
+#| label: costs-B
+tree_B <- tree_B |>
+  mutate(
+    cost_test  = 0,
+    cost_tx    = c_treat,                       # everyone gets treatment
+    cost_dz    = if_else(disease, c_dz_tx, c_overtx),
+    cost_total = cost_test + cost_tx + cost_dz
+  )
+
+tree_B |>
+  select(disease, treat, path_prob, cost_test, cost_tx, cost_dz, cost_total) |>
+  show_tbl("Terminal paths (B) with costs")
+```
+
+### QALYs at terminal nodes (B)
+
+```{r}
+#| label: qalys-B
+tree_B <- tree_B |>
+  mutate(
+    qaly = if_else(disease, q_dz_tx, q_overtx)
+  )
+
+tree_B |>
+  select(disease, treat, path_prob, qaly) |>
+  show_tbl("Terminal paths (B) with QALYs")
+```
+
+### Expected values (Strategy B)
+
+```{r}
+#| label: expected-values-B
+strat_B <- tree_B |>
+  summarise(
+    EV_cost = sum(path_prob * cost_total),
+    EV_qaly = sum(path_prob * qaly),
+    .groups = "drop"
+  ) |>
+  mutate(
+    strategy = "Treat-All",
+    NMB      = EV_qaly * lambda - EV_cost
+  )
+
+strat_B |> show_tbl("Expected values (Strategy B)", "E[Cost], E[QALY], and NMB")
+```
+
+---
+
+## Comparison: A vs B (ICER, NMB)
+
+```{r}
+#| label: compare-AB
+results_AB <- bind_rows(
+  strat_A |> select(strategy, EV_cost, EV_qaly, NMB),
+  strat_B |> select(strategy, EV_cost, EV_qaly, NMB)
+) |>
+  arrange(EV_cost)
+
+results_AB |>
+  show_tbl("Strategy comparison (ordered by expected cost)")
+```
+
+```{r}
+#| label: icer-AB
+icer_AB <- results_AB |>
+  mutate(rank_cost = rank(EV_cost, ties.method = "first")) |>
+  arrange(rank_cost) |>
+  mutate(
+    dCost = EV_cost - lag(EV_cost),
+    dQALY = EV_qaly - lag(EV_qaly),
+    ICER  = dCost / dQALY
+  )
+
+icer_AB |>
+  show_tbl("ICER table", "Computed for the costlier vs cheaper strategy")
+```
+
+```{r}
+#| label: dominance-check
+dominance_note <- {
+  cheaper <- results_AB$strategy[1]
+  moreexp <- results_AB$strategy[2]
+  if (!is.na(icer_AB$ICER[2]) && (results_AB$EV_qaly[2] <= results_AB$EV_qaly[1])) {
+    "The more costly strategy is weakly dominated (higher cost, no extra QALYs)."
+  } else {
+    "No simple dominance detected; interpret ICER relative to λ and consider NMB."
+  }
+}
+
+nmb_best <- results_AB$strategy[which.max(results_AB$NMB)]
+
+tibble(
+  note = dominance_note,
+  lambda = lambda,
+  nmb_optimal_strategy = nmb_best
+) |>
+  show_tbl("Decision notes", "Dominance & NMB-optimal strategy at current λ")
+```

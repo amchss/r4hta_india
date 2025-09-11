@@ -1,6 +1,109 @@
 ---
-title: "R4HTA-India 2025"
+title: "Welcome to R4HTA-India 2025"
 editor: source
 ---
 
 ![](images/RHTA_SCTIMST_SPGrand.jpg)
+
+# R4HTA India 2025
+
+**Health Technology Assessment Using R**
+
+:::{style="text-align:justify"}
+
+The Regional Resource Centre for Health Technology Assessment (RRC-HTA) at Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram), in collaboration with the Achutha Menon Centre for Health Science Studies (AMCHSS, SCTIMST), conducted a two-day hands-on workshop on 9–10 September 2025.
+
+Participants from 17 different institutions across India attended the workshop
+
+:::
+
+![Figure 1: Institutions across India whose representatives participated in the R4HTA India 2025 workshop.](images/particpants_location.png){fig-align="center"}
+
+:::{style="text-align:justify"}
+
+The training introduced participants to R-based computational methods for conducting transparent, reproducible, and rigorous health economic evaluations and decision modelling.
+
+This website serves as a **digital resource portal** for:
+
+-   **Workshop materials** (slides, code, datasets)
+-   **Event schedules and sessions**
+-   **Updates and announcements**
+
+:::
+
+------------------------------------------------------------------------
+
+## Workshop Objective
+
+:::{style="text-align:justify"}
+
+The two-day intensive training bridged traditional Health Technology Assessment (HTA) methods with modern R-based computational approaches, enhancing reproducibility, transparency, and analytical rigor in health economic evaluations.
+
+:::
+
+------------------------------------------------------------------------
+
+## When & Where
+
+:::{style="text-align:justify"}
+
+-   **Dates:** 9–10 September 2025\
+-   **Venue:** Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram
+
+:::
+------------------------------------------------------------------------
+
+## What Participants Learned
+
+:::{style="text-align:justify"}
+
+Participants gained hands-on experience in:\
+- Basics of R programming for HTA\
+- Building Decision Trees & Markov Models\
+- Running Probabilistic Sensitivity Analysis (PSA)\
+- Creating cost-effectiveness visualizations\
+- Developing interactive HTA reports
+
+:::
+
+## Schedule
+
+### Day 1 (9th Sept 2025)
+
+| Time | Session | Topics & Activities | Instructor |
+|-----------------|-----------------|----------------------|-----------------|
+| 09:00-10:00 | Welcome & Setup | Why R for HTA? Reproducibility, power, and transparency<br> Guided installation of R and RStudio<br> Workshop overview and objectives | Prof. Biju Soman & Prof. Abhijit Pakhare |
+| 10:00-11:00 | RStudio & R Basics | -RStudio interface: Script, Console, Environment, and Plots panes<br> Core concepts: Objects, vectors, and data frames<br> Hands-on practice with basic R commands | Dr. Arun Mitra |
+| 11:00-11:15 | Coffee Break |  |  |
+| 11:15-12:15 | Data Import & Inspection | Data import functions: `read_csv()`, `readxl()`<br> Data inspection: `head()`, `str()`, `summary()`, `glimpse()`<br> Activity: Load HTA dataset and explore structure | Prof. Abhijit Pakhare & Dr. Arun Mitra |
+| 12:15-13:00 | Data Wrangling (dplyr) | Core verbs: `select()`, `filter()`, `arrange()`, `mutate()`<br> The pipe operator | Dr. Arun Mitra |
+| 14:00-15:15 | Decision Tree Modeling | Theory: Decision nodes, chance nodes, and terminal nodes<br> Activity: Code and run a decision tree to calculate expected costs and QALYs | Prof. Biju Soman & Prof. Abhijit Pakhare |
+| 15:15-15:30 | Coffee Break |  |  |
+| 15:30-16:15 | Data Visualization (ggplot2) | Grammar of Graphics: `aes()` mapping and `geom_` layers<br> Activity: Create cost distributions and outcome visualizations | Dr. Rehna Mohamed & Mr. Arun Jose |
+| 16:15-17:30 | Group Activity | Hands-on | All |
+
+### Day 2 (10th Sept 2025)
+
+| Time | Session | Topics & Activities | Instructor |
+|-----------------|-----------------|----------------------|-----------------|
+| 09:00-10:00 | Modeling Concepts | Markov model fundamentals: States, transitions, and cycles<br>Activity: Define model parameters (costs, utilities, probabilities) as R objects | Prof. Abhijit Pakhare & Dr. Ashis John |
+| 10:00-11:00 | Building the Engine | Transition matrices: Movement probabilities<br>Activity: Create state cost and utility vectors | Prof. Abhijit Pakhare & Dr. Arun Mitra |
+| 11:00-11:15 | Coffee Break |  |  |
+| 11:15-12:00 | Running the Model | Implementation using for loops<br>Activity: Run simulation and aggregate costs and QALYs for treatment strategies | Prof. Abhijit Pakhare |
+| 12:00-13:00 | PSA Setup | Probabilistic sensitivity analysis theory<br> Activity: Define distributions for parameters using `rbeta()`, `rgamma()` | Dr. Ashis John & Mr. Arun Jose |
+| 14:00-15:00 | Running the PSA | Monte Carlo simulation implementation<br> Activity: Execute PSA with 1,000+ iterations and store results | Prof. Abhijit Pakhare |
+| 15:00-15:45 | Visualizing PSA Results | Cost-effectiveness plane and acceptability curves<br> Activity: Create publication-ready HTA visualizations using `ggplot2` | Prof. Biju Soman & Dr. Arun Mitra |
+| 15:45-16:00 | Coffee Break |  |  |
+| 16:00-16:45 | Interactive Reporting | Quarto and Shiny integration<br> Activity: Develop interactive HTA report and application | Prof. Abhijit Pakhare |
+| 16:45-17:30 | Closing Remarks | Valedictory and Feedback | All |
+
+## Facilitators
+
+|  |  |
+|:------------------------------:|:---------------------------------------|
+| ![Dr. Biju Soman](images/biju.png){width="90px"} | **Dr. Biju Soman**<br>PI, Regional Resource Centre - HTA,<br>SCTIMST, Trivandrum |
+| ![Dr. Abhijit Pakhare](images/abhijeet-modified.png){width="90px"} | **Dr. Abhijit Pakhare**<br>PI, Regional Resource Centre - HTA,<br>AIIMS — Bhopal |
+| ![Dr. Arun Mitra](images/arun.png){width="90px"} | **Dr. Arun Mitra**<br>Assistant Professor,<br>AIIMS — Bibinagar, Hyderabad |
+| ![Dr. Ashis Samuel John](images/ashis-modified.png){width="90px"} | **Dr. Ashis Samuel John**<br>Scientist - C, RRC - HTA,<br>SCTIMST, Trivandrum |
+| ![Dr. Rehna Mohammed](images/rehna-modified.png){width="90px"} | **Dr. Rehna C Mohamed**<br>Health Economist, RRC - HTA,<br>SCTIMST, Trivandrum |
+| ![Mr. Arun Jose](images/arun-jose-modified.png){width="90px"} | **Mr. Arun Jose**<br>Research Scholar,<br>SCTIMST, Trivandrum |

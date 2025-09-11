@@ -4,6 +4,13 @@ embed-resources: true
 
 ## Overview: Day One
 
+:::{style="text-align:justify"}
+Day 1 of the R4HTA India 2025 workshop introduced participants to the essentials of working with R for Health Technology Assessment. The sessions emphasized getting comfortable with R and RStudio, learning how to handle and clean data, creating effective visualizations, and understanding how to communicate research findings using reproducible documents.
+
+:::
+
+👉 Dive deeper into these topics here:  
+
 -   [Introduction: Basic Concepts](intro.qmd)
 
 -   [Getting comfortable with R and RStudio](install_r_rstudio.qmd)

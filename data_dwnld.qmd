@@ -1,0 +1,18 @@
+---
+title: "Data"
+---
+## Datasets
+
+<a href="data/pci_cabg_data.csv" class="btn" download>pci_cabg_data.csv</a>
+
+<a href="data/distributions_hta_casestudy.xlsx" class="btn" download>distributions_hta_casestudy.xlsx</a>
+
+<a href="data/low_birth_weight.csv" class="btn" download>low_birth_weight.csv</a>
+
+<a href="data/nhanes_basic_info.csv" class="btn" download>nhanes_basic_info.csv</a>
+
+<a href="data/nhanes_behaviour_info.rds" class="btn" download>nhanes_behaviour_info.rds</a>
+
+<a href="data/nhanes_clinical_info.rds" class="btn" download>nhanes_clinical_info.rds</a>
+
+<a href="data/nhanes_modified_df.rds" class="btn" download>nhanes_modified_df.rds</a>
