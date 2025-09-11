@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>exploring_data_v2 – R4HTA-India 2025</title>
+<title>exploring_data_v2 – R4HTA India 2025</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -69,10 +69,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -100,6 +102,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 
 <link rel="stylesheet" href="styles.css">
@@ -113,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">R4HTA-India 2025</span>
+    <span class="navbar-title">R4HTA India 2025</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -123,20 +127,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="./index.html"> <i class="bi bi-house" role="img">
+</i> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./day_one.html"> 
+    <a class="nav-link" href="./day_one.html"> <i class="bi bi-calendar-day" role="img">
+</i> 
 <span class="menu-text">Day One</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./day_two.html"> 
+    <a class="nav-link" href="./day_two.html"> <i class="bi bi-calendar-day" role="img">
+</i> 
 <span class="menu-text">Day Two</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data_dwnld.html"> <i class="bi bi-database" role="img">
+</i> 
+<span class="menu-text">Data</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> <i class="bi bi-people" role="img">
+</i> 
+<span class="menu-text">About Us</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./gallery.html"> <i class="bi bi-images" role="img">
+</i> 
+<span class="menu-text">Gallery</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:hta.sctimst@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/amchss/r4hta_india"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
       </div> <!-- /container-fluid -->
     </nav>
@@ -149,28 +184,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#getting-started-with-the-data-exploration-pipeline" id="toc-getting-started-with-the-data-exploration-pipeline" class="nav-link active" data-scroll-target="#getting-started-with-the-data-exploration-pipeline">Getting Started with the Data Exploration Pipeline</a>
   <ul class="collapse">
-  <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set-up</a></li>
-  </ul></li>
-  <li><a href="#dplyr-package" id="toc-dplyr-package" class="nav-link" data-scroll-target="#dplyr-package"><code>dplyr</code> Package</a>
-  <ul class="collapse">
-  <li><a href="#getting-used-to-the-pipe-or" id="toc-getting-used-to-the-pipe-or" class="nav-link" data-scroll-target="#getting-used-to-the-pipe-or">Getting used to the pipe <code>|&gt;</code> or <code>%&gt;%</code></a></li>
-  <li><a href="#distinct-and-count" id="toc-distinct-and-count" class="nav-link" data-scroll-target="#distinct-and-count"><code>distinct()</code> and <code>count()</code></a></li>
-  <li><a href="#arrange" id="toc-arrange" class="nav-link" data-scroll-target="#arrange"><code>arrange()</code></a></li>
-  <li><a href="#filter" id="toc-filter" class="nav-link" data-scroll-target="#filter"><code>filter()</code></a></li>
-  <li><a href="#in" id="toc-in" class="nav-link" data-scroll-target="#in"><code>%in%</code></a></li>
-  <li><a href="#drop_na" id="toc-drop_na" class="nav-link" data-scroll-target="#drop_na"><code>drop_na()</code></a></li>
-  <li><a href="#select" id="toc-select" class="nav-link" data-scroll-target="#select"><code>select()</code></a></li>
-  <li><a href="#select-helper-functions" id="toc-select-helper-functions" class="nav-link" data-scroll-target="#select-helper-functions"><code>select()</code> helper functions</a></li>
-  <li><a href="#summarize" id="toc-summarize" class="nav-link" data-scroll-target="#summarize"><code>summarize()</code></a></li>
-  <li><a href="#group_by" id="toc-group_by" class="nav-link" data-scroll-target="#group_by"><code>group_by()</code></a></li>
-  <li><a href="#group_by-and-summarize-together" id="toc-group_by-and-summarize-together" class="nav-link" data-scroll-target="#group_by-and-summarize-together"><code>group_by()</code> and <code>summarize()</code> together</a></li>
-  <li><a href="#mutate" id="toc-mutate" class="nav-link" data-scroll-target="#mutate"><code>mutate()</code></a></li>
-  <li><a href="#join" id="toc-join" class="nav-link" data-scroll-target="#join"><code>join()</code></a></li>
-  <li><a href="#pivot" id="toc-pivot" class="nav-link" data-scroll-target="#pivot"><code>pivot()</code></a></li>
-  </ul></li>
+  <li><a href="#getting-started-with-the-data-exploration-pipeline" id="toc-getting-started-with-the-data-exploration-pipeline" class="nav-link active" data-scroll-target="#getting-started-with-the-data-exploration-pipeline">Getting Started with the Data Exploration Pipeline</a></li>
+  <li><a href="#dplyr-package" id="toc-dplyr-package" class="nav-link" data-scroll-target="#dplyr-package"><code>dplyr</code> Package</a></li>
   </ul>
 </nav>
     </div>
@@ -758,6 +774,150 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
@@ -830,7 +990,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("amchss\.github\.io\/r4hta_india\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -1163,4 +1323,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>
