@@ -11,7 +11,7 @@ editor: source
 
 :::{style="text-align:justify"}
 
-The Regional Resource Centre for Health Technology Assessment (RRC-HTA) at Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram), in collaboration with the Achutha Menon Centre for Health Science Studies (AMCHSS, SCTIMST), conducted a two-day hands-on workshop on 9–10 September 2025.
+The Regional Resource Centre for Health Technology Assessment (RRC-HTA) at Achutha Menon Centre for Health Science Studies (AMCHSS), Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram, conducted a two-day hands-on workshop on 9–10 September 2025.
 
 Participants from 17 different institutions across India attended the workshop
 
@@ -51,6 +51,7 @@ The two-day intensive training bridged traditional Health Technology Assessment 
 -   **Venue:** Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST), Thiruvananthapuram
 
 :::
+
 ------------------------------------------------------------------------
 
 ## What Participants Learned
